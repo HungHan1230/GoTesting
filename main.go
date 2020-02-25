@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	TransposeMatrix "github.com/MyTestingGolangFuncs/TransposeMatrix"
+	TransposeMatrix "github.com/HungHan1230/GoTesting/TransposeMatrix"
 
-	MyTestingReadFile "github.com/MyTestingGolangFuncs/MyTestingReadFile"
+	MyTestingReadFile "github.com/HungHan1230/GoTesting/MyTestingReadFile"
 )
 
 func main() {
