@@ -1,0 +1,5 @@
+package GolangJSON
+
+func run() {
+
+}
