@@ -1,0 +1,16 @@
+{
+    "user": {
+        "mspid": "admin",
+        "email": "admin@domain.com"
+    },
+    "nodes": [
+        {
+            "name": "node1",
+            "location": "node1.domain.com:8080"
+        },
+        {
+            "name": "node2",
+            "location": "node2.domain.com:8080"
+        }
+    ]
+}

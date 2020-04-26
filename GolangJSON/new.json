@@ -1,0 +1,16 @@
+{
+    "nodes": [
+        {
+            "location": "new-value1",
+            "name": "node1"
+        },
+        {
+            "location": "new-value2",
+            "name": "node2"
+        }
+    ],
+    "user": {
+        "email": "admin@domain.com",
+        "mspid": "admin"
+    }
+}
