@@ -54,11 +54,11 @@
         "monitor_ping_interval": "15s",
         "peer_addresses": [],
         "peer_watch_interval": "5s",
-        "peername": "hank-MS-7B45",
+        "peername": "hank",
         "pin_recover_interval": "12m0s",
-        "replication_factor_max": -1,
-        "replication_factor_min": -1,
-        "secret": "123456abcd",
+        "replication_factor_max": 2,
+        "replication_factor_min": 2,
+        "secret": "123123asdf",
         "state_sync_interval": "5m0s"
     },
     "consensus": {
