@@ -9,7 +9,9 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
+	"github.com/negah/percent"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
@@ -18,10 +20,152 @@ import (
 )
 
 func main() {
-	simple()
-	myplot()
+	// simple()
+	// plotsnapshots()
 	// RunExample()
+	unixTime1 := time.Unix(1592295927, 0) //gives unix time stamp in utc
+	unixTime2 := time.Unix(1587121480, 0) //gives unix time stamp in utc
+	fmt.Println(unixTime1.Format("2006-01-02 15:04:05"))
+	fmt.Println(unixTime2.Format("2006-01-02 15:04:05"))
 
+	//test percernt package
+	fmt.Println(percent.PercentFloat(0.3, 200))	
+	fmt.Println(percent.PercentOf(5, 200))
+
+	var testf float64
+	testf = (10160.0-10136.0)/10160.0
+	fmt.Printf("%f %% \n",testf*100)
+	testf = 625.0 / 10000.0
+	fmt.Printf("%f %% \n",testf*100)
+	
+
+}
+func plotchurn() {
+	p, _ := plot.New()
+
+	p.Title.Text = "The churn rate of bitcoin nodes from 2020/4/17 to 2020/6/16"
+	p.X.Label.Text = "timestamp"
+	p.Y.Label.Text = "number of nodes"
+	p.Add(plotter.NewGrid())
+	// var points plotter.XYs
+}
+func calculateChurn() {
+	// Open the file
+	csvfile, err := os.Open("nodes.csv")
+	if err != nil {
+		log.Fatalln("Couldn't open the csv file", err)
+	}
+	// Parse the file
+	r := csv.NewReader(csvfile)
+
+	// mycode
+	var counter int
+	counter = 1
+	var tmptimestamp, tmpnodes, currenttimestamp, currentnodes int64
+	var churn_rate float64
+
+	// Iterate through the records
+	for {
+		// Read each record from csv
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
+		if counter == 1 {
+			tmptimestamp, err = strconv.ParseInt(record[0], 10, 64)
+			tmpnodes, err = strconv.ParseInt(record[1], 10, 64)
+		} else {
+			currenttimestamp, err = strconv.ParseInt(record[0], 10, 64)
+			currentnodes, err = strconv.ParseInt(record[1], 10, 64)
+
+			churn_rate := tmpnodes / currentnodes
+			fmt.Printf("%f %f\n", churn_rate, tmptimestamp)
+			tmptimestamp = currenttimestamp
+			tmpnodes = currentnodes
+
+		}
+		fmt.Println(churn_rate)
+		counter++
+
+	}
+
+}
+func plotsnapshots() {
+	p, _ := plot.New()
+
+	p.Title.Text = "The snapshots of bitcoin nodes from 2020/4/17 to 2020/6/16"
+	p.X.Label.Text = "timestamp"
+	p.Y.Label.Text = "number of nodes"
+	p.Add(plotter.NewGrid())
+
+	// points := plotter.XYs{
+	// 	{1592295927, 10462},
+	// 	{1592295633, 10485},
+	// 	{1592295338, 10480},
+	// 	{1592294991, 10515},
+	// 	{1592294614, 10497},
+	// }
+
+	var points plotter.XYs
+
+	points = readcsv()
+	// plotutil.AddLinePoints(p, points)
+
+	// Make a scatter plotter and set its style.
+	s, err := plotter.NewScatter(points)
+	if err != nil {
+		panic(err)
+	}
+	s.GlyphStyle.Color = color.RGBA{R: 255, B: 128, A: 255}
+	s.Shape = draw.PyramidGlyph{}
+	p.Add(s)
+	p.Legend.Add("scatter", s)
+
+	p.Save(5*vg.Inch, 5*vg.Inch, "nodes.png")
+
+}
+
+func readcsv() plotter.XYs {
+	// Open the file
+	csvfile, err := os.Open("nodes.csv")
+	if err != nil {
+		log.Fatalln("Couldn't open the csv file", err)
+	}
+
+	// Parse the file
+	r := csv.NewReader(csvfile)
+	//r := csv.NewReader(bufio.NewReader(csvfile))
+
+	//my code
+	var points plotter.XYs
+
+	var count int
+	// Iterate through the records
+	for {
+		// Read each record from csv
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
+		var x, y float64
+		x, err = strconv.ParseFloat(record[0], 64)
+		y, err = strconv.ParseFloat(record[1], 64)
+		points = append(points, struct{ X, Y float64 }{x, y})
+		if y < 7000 {
+			fmt.Println("the pair is: ", record[0], record[1])
+		}
+		count++
+	}
+	fmt.Println("total: ", count)
+	return points
 }
 
 // type xy struct{ x, y float64 }
@@ -132,70 +276,4 @@ func simple() {
 	plotutil.AddLinePoints(p, points)
 
 	p.Save(4*vg.Inch, 4*vg.Inch, "price.png")
-}
-
-func myplot() {
-	p, _ := plot.New()
-
-	p.Title.Text = "Blk.dat access frequency"
-	p.X.Label.Text = "Blk.dat"
-	p.Y.Label.Text = "Count"
-
-	// points := plotter.XYs{
-	// 	{1592295927, 10462},
-	// 	{1592295633, 10485},
-	// 	{1592295338, 10480},
-	// 	{1592294991, 10515},
-	// 	{1592294614, 10497},
-	// }
-
-	var points plotter.XYs
-	// for loop read data
-	// var x, y float64
-
-	// points = append(points, struct{ X, Y float64 }{x, y})
-	points = readcsv()
-	plotutil.AddLinePoints(p, points)
-
-	p.Save(4*vg.Inch, 4*vg.Inch, "nodes.png")
-
-}
-
-func readcsv() plotter.XYs {
-	// Open the file
-	csvfile, err := os.Open("nodes.csv")
-	if err != nil {
-		log.Fatalln("Couldn't open the csv file", err)
-	}
-
-	// Parse the file
-	r := csv.NewReader(csvfile)
-	//r := csv.NewReader(bufio.NewReader(csvfile))
-
-	//my code
-	var points plotter.XYs
-
-	var count int
-	// Iterate through the records
-	for {
-		// Read each record from csv
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
-		var x, y float64
-		x, err = strconv.ParseFloat(record[0], 64)
-		y, err = strconv.ParseFloat(record[1], 64)
-		points = append(points, struct{ X, Y float64 }{x, y})
-		if y < 7000 {
-			fmt.Println("the pair is: ", record[0], record[1])
-		}
-		count++
-	}
-	fmt.Println("total: ", count)
-	return points
 }

@@ -20,6 +20,7 @@ var has_next bool
 var next interface{}
 
 func appendToCSV(data Data) {
+	// check if nodes.csv exists
 	_, err := os.Open("nodes.csv")
 	if err != nil {
 		// fmt.Println(os.IsNotExist(err)) //true  證明檔案已經存在
