@@ -22,32 +22,107 @@ import (
 func main() {
 	// simple()
 	plotsnapshots()
-	// RunExample()	
-	
+	// RunExample()
+
 	calculateChurn()
 	// mytest()
-	
+	plotblk()
 
 }
-func mytest(){
+func mytest() {
 	unixTime1 := time.Unix(1592295927, 0) //gives unix time stamp in utc
 	unixTime2 := time.Unix(1587121480, 0) //gives unix time stamp in utc
 	fmt.Println(unixTime1.Format("2006-01-02 15:04:05"))
 	fmt.Println(unixTime2.Format("2006-01-02 15:04:05"))
 
 	//test percernt package
-	fmt.Println(percent.PercentFloat(0.3, 200))	
+	fmt.Println(percent.PercentFloat(0.3, 200))
 	fmt.Println(percent.PercentOf(5, 200))
-
 
 	// 1 10136.0
 	// 2 10160.0
 	// 3 9901.0
-	var a,b,testf float64
+	var a, b, testf float64
 	a = 10136.0
 	b = 10160.0
-	testf = (b-a)/a
-	fmt.Printf("%f %% \n",testf*100)
+	testf = (b - a) / a
+	fmt.Printf("%f %% \n", testf*100)
+}
+func readblkcsv() (ps plotter.XYs){
+	csvfile, err := os.Open("../read.csv")
+	if err != nil {
+		log.Fatalln("Couldn't open the csv file", err)
+	}
+	// Parse the file
+	r := csv.NewReader(csvfile)
+
+	m := make(map[string]int)
+
+	for {
+		// Read each record from csv
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1])//record[3]
+
+		v, ok := m[record[3]]
+		if !ok {
+			// log.Fatal("It should be true")
+			m[record[3]] = 1
+		} else {
+			m[record[3]] = v + 1
+		}
+		// if !(v == "Beego") {
+		// 	log.Fatal("Wrong value")
+		// }
+	}
+	fmt.Println(m)
+	delete(m, "0")
+	var points plotter.XYs
+	for k, v := range m {
+
+		// fmt.Println(fmt.Sprintf("%s: %s", k, v))		
+		kvalue, err := strconv.ParseFloat(k, 64)
+		
+		if err != nil{
+			log.Fatal("something wrong")
+		}
+		points = append(points, struct{ X, Y float64 }{kvalue, float64(v)})
+	}
+	return points
+
+}
+
+func plotblk() {
+	p, _ := plot.New()
+
+	p.Title.Text = "The blk access pattern of bitcoin nodes from 2020/4/17 to 2020/6/16"
+	p.X.Label.Text = "blk.dat"
+	p.Y.Label.Text = "count"
+	p.Add(plotter.NewGrid())
+
+	var points plotter.XYs
+
+	points = readblkcsv()
+	// plotutil.AddLinePoints(p, points)
+
+	// Make a scatter plotter and set its style.
+	s, err := plotter.NewScatter(points)
+	if err != nil {
+		panic(err)
+	}
+	s.GlyphStyle.Color = color.RGBA{R: 255, B: 128, A: 255}
+	s.Shape = draw.PyramidGlyph{}
+	s.GlyphStyle.Radius = vg.Points(5)
+	p.Add(s)
+	p.Legend.Add("scatter", s)
+
+	p.Save(20*vg.Inch, 4*vg.Inch, "blknodes.png")
+
 }
 
 func plotchurn(points plotter.XYs) {
@@ -58,7 +133,7 @@ func plotchurn(points plotter.XYs) {
 	p.Y.Label.Text = "churn rate"
 	p.Add(plotter.NewGrid())
 	// var points plotter.XYs
-	s,po , err := plotter.NewLinePoints(points)
+	s, po, err := plotter.NewLinePoints(points)
 	if err != nil {
 		panic(err)
 	}
@@ -69,15 +144,18 @@ func plotchurn(points plotter.XYs) {
 	// s.LineStyle.Dashes = []vg.Length{vg.Points(5), vg.Points(5)}
 	// s.LineStyle.Color = color.RGBA{B: 255, A: 255}
 	// s.Shape = draw.PyramidGlyph{}
-	p.Add(s,po)
+	p.Add(s, po)
 	p.Legend.Add("linepoint", s)
 
-	p.Save(20*vg.Inch, 5*vg.Inch, "nodes_churn.png")
+	p.Save(15*vg.Inch, 5*vg.Inch, "nodes_churn.png")
 }
-type mydata struct{
+
+type mydata struct {
 	timestamp int64
-	churn_r float64
+	churn_r   float64
+	add_n     int
 }
+
 func calculateChurn() {
 	// Open the file
 	csvfile, err := os.Open("nodes.csv")
@@ -89,7 +167,7 @@ func calculateChurn() {
 	// mycode
 	var counter int
 	counter = 1
-	var tmptimestamp, tmpnodes, previoustimestamp, previousnodes, churn_rate float64
+	var tmptimestamp, tmpnodes, previoustimestamp, previousnodes, churn_rate, add_nodes float64
 	var dataArr []mydata
 	var points plotter.XYs
 	// Iterate through the records
@@ -106,28 +184,31 @@ func calculateChurn() {
 		if counter == 1 {
 			// tmptimestamp, err = strconv.ParseInt(record[0], 10, 64)
 			tmptimestamp, err = strconv.ParseFloat(record[0], 64)
-			tmpnodes, err = strconv.ParseFloat(record[1], 64)			
+			tmpnodes, err = strconv.ParseFloat(record[1], 64)
 			// churn_rate = 0.0
 		} else {
 			previoustimestamp, err = strconv.ParseFloat(record[0], 64)
 			previousnodes, err = strconv.ParseFloat(record[1], 64)
 
 			var judgement float64
-			judgement =  previousnodes - tmpnodes
-			if judgement > 0{
-				churn_rate = (judgement / tmpnodes)*100
-			}else{
+			judgement = previousnodes - tmpnodes
+			if judgement > 0 {
+				churn_rate = (judgement / tmpnodes) * 100
+				add_nodes = 0
+			} else {
 				churn_rate = 0
+				add_nodes = tmpnodes - previousnodes
 			}
-						
+
 			tmptimestamp = previoustimestamp
 			tmpnodes = previousnodes
 		}
 		var tmpdata mydata
 		tmpdata.timestamp = int64(tmptimestamp)
 		tmpdata.churn_r = churn_rate
-		dataArr = append(dataArr,tmpdata)	
-		
+		tmpdata.add_n = int(add_nodes)
+		dataArr = append(dataArr, tmpdata)
+
 		points = append(points, struct{ X, Y float64 }{tmptimestamp, churn_rate})
 
 		counter++
@@ -136,9 +217,44 @@ func calculateChurn() {
 			fmt.Println("pair: ", tmptimestamp, churn_rate)
 		}
 	}
-	fmt.Println(dataArr)
+	// fmt.Println(dataArr)
+	writetoCSV(dataArr)
+
 	plotchurn(points)
 
+}
+
+func writetoCSV(data []mydata) {
+	// check if nodes.csv exists
+	_, err := os.Open("nodes_churn.csv")
+	if err != nil {
+		// fmt.Println(os.IsNotExist(err)) //true  證明檔案已經存在
+		// fmt.Println(err)                //open widuu.go: no such file or directory
+		os.Create("nodes_churn.csv")
+	}
+
+	var path = "nodes_churn.csv"
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	w := csv.NewWriter(f)
+
+	var tocsv [][]string
+	for i := 0; i < len(data); i++ {
+		tocsv = append(tocsv, []string{strconv.FormatInt(data[i].timestamp, 10), fmt.Sprintf("%f", data[i].churn_r), strconv.Itoa(data[i].add_n)})
+	}
+	// fmt.Println(tocsv)
+
+	// tocsv += strconv.FormatInt(data.timestamp_d, 10) + "," + strconv.Itoa(data.total_nodes_d)
+	// fmt.Println(tocsv)
+	w.WriteAll(tocsv)
+
+	if err := w.Error(); err != nil {
+		log.Fatal(err)
+	}
 }
 func plotsnapshots() {
 	p, _ := plot.New()
