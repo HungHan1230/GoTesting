@@ -21,8 +21,15 @@ import (
 
 func main() {
 	// simple()
-	// plotsnapshots()
-	// RunExample()
+	plotsnapshots()
+	// RunExample()	
+	
+	calculateChurn()
+	// mytest()
+	
+
+}
+func mytest(){
 	unixTime1 := time.Unix(1592295927, 0) //gives unix time stamp in utc
 	unixTime2 := time.Unix(1587121480, 0) //gives unix time stamp in utc
 	fmt.Println(unixTime1.Format("2006-01-02 15:04:05"))
@@ -32,22 +39,44 @@ func main() {
 	fmt.Println(percent.PercentFloat(0.3, 200))	
 	fmt.Println(percent.PercentOf(5, 200))
 
-	var testf float64
-	testf = (10160.0-10136.0)/10160.0
-	fmt.Printf("%f %% \n",testf*100)
-	testf = 625.0 / 10000.0
-	fmt.Printf("%f %% \n",testf*100)
-	
 
+	// 1 10136.0
+	// 2 10160.0
+	// 3 9901.0
+	var a,b,testf float64
+	a = 10136.0
+	b = 10160.0
+	testf = (b-a)/a
+	fmt.Printf("%f %% \n",testf*100)
 }
-func plotchurn() {
+
+func plotchurn(points plotter.XYs) {
 	p, _ := plot.New()
 
 	p.Title.Text = "The churn rate of bitcoin nodes from 2020/4/17 to 2020/6/16"
 	p.X.Label.Text = "timestamp"
-	p.Y.Label.Text = "number of nodes"
+	p.Y.Label.Text = "churn rate"
 	p.Add(plotter.NewGrid())
 	// var points plotter.XYs
+	s,po , err := plotter.NewLinePoints(points)
+	if err != nil {
+		panic(err)
+	}
+	s.Color = color.RGBA{R: 255, A: 255}
+	// po.Shape = draw.PyramidGlyph{}
+	po.Color = color.RGBA{R: 255, A: 255}
+	// s.LineStyle.Width = vg.Points(1)
+	// s.LineStyle.Dashes = []vg.Length{vg.Points(5), vg.Points(5)}
+	// s.LineStyle.Color = color.RGBA{B: 255, A: 255}
+	// s.Shape = draw.PyramidGlyph{}
+	p.Add(s,po)
+	p.Legend.Add("linepoint", s)
+
+	p.Save(20*vg.Inch, 5*vg.Inch, "nodes_churn.png")
+}
+type mydata struct{
+	timestamp int64
+	churn_r float64
 }
 func calculateChurn() {
 	// Open the file
@@ -57,13 +86,12 @@ func calculateChurn() {
 	}
 	// Parse the file
 	r := csv.NewReader(csvfile)
-
 	// mycode
 	var counter int
 	counter = 1
-	var tmptimestamp, tmpnodes, currenttimestamp, currentnodes int64
-	var churn_rate float64
-
+	var tmptimestamp, tmpnodes, previoustimestamp, previousnodes, churn_rate float64
+	var dataArr []mydata
+	var points plotter.XYs
 	// Iterate through the records
 	for {
 		// Read each record from csv
@@ -76,22 +104,40 @@ func calculateChurn() {
 		}
 		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
 		if counter == 1 {
-			tmptimestamp, err = strconv.ParseInt(record[0], 10, 64)
-			tmpnodes, err = strconv.ParseInt(record[1], 10, 64)
+			// tmptimestamp, err = strconv.ParseInt(record[0], 10, 64)
+			tmptimestamp, err = strconv.ParseFloat(record[0], 64)
+			tmpnodes, err = strconv.ParseFloat(record[1], 64)			
+			// churn_rate = 0.0
 		} else {
-			currenttimestamp, err = strconv.ParseInt(record[0], 10, 64)
-			currentnodes, err = strconv.ParseInt(record[1], 10, 64)
+			previoustimestamp, err = strconv.ParseFloat(record[0], 64)
+			previousnodes, err = strconv.ParseFloat(record[1], 64)
 
-			churn_rate := tmpnodes / currentnodes
-			fmt.Printf("%f %f\n", churn_rate, tmptimestamp)
-			tmptimestamp = currenttimestamp
-			tmpnodes = currentnodes
-
+			var judgement float64
+			judgement =  previousnodes - tmpnodes
+			if judgement > 0{
+				churn_rate = (judgement / tmpnodes)*100
+			}else{
+				churn_rate = 0
+			}
+						
+			tmptimestamp = previoustimestamp
+			tmpnodes = previousnodes
 		}
-		fmt.Println(churn_rate)
+		var tmpdata mydata
+		tmpdata.timestamp = int64(tmptimestamp)
+		tmpdata.churn_r = churn_rate
+		dataArr = append(dataArr,tmpdata)	
+		
+		points = append(points, struct{ X, Y float64 }{tmptimestamp, churn_rate})
+
 		counter++
 
+		if churn_rate != 0 && churn_rate > 1 {
+			fmt.Println("pair: ", tmptimestamp, churn_rate)
+		}
 	}
+	fmt.Println(dataArr)
+	plotchurn(points)
 
 }
 func plotsnapshots() {
@@ -125,7 +171,7 @@ func plotsnapshots() {
 	p.Add(s)
 	p.Legend.Add("scatter", s)
 
-	p.Save(5*vg.Inch, 5*vg.Inch, "nodes.png")
+	p.Save(15*vg.Inch, 5*vg.Inch, "nodes.png")
 
 }
 
@@ -159,9 +205,9 @@ func readcsv() plotter.XYs {
 		x, err = strconv.ParseFloat(record[0], 64)
 		y, err = strconv.ParseFloat(record[1], 64)
 		points = append(points, struct{ X, Y float64 }{x, y})
-		if y < 7000 {
-			fmt.Println("the pair is: ", record[0], record[1])
-		}
+		// if y < 7000 {
+		// 	fmt.Println("the pair is: ", record[0], record[1])
+		// }
 		count++
 	}
 	fmt.Println("total: ", count)
