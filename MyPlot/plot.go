@@ -24,32 +24,54 @@ func main() {
 	plotsnapshots()
 	// RunExample()
 
-	calculateChurn()
+	// calculateChurn()
 	// mytest()
-	plotblk()
+
+	// plotblk()
+
+	calculateAverageMaximumChurn()
 
 }
-func mytest() {
-	unixTime1 := time.Unix(1592295927, 0) //gives unix time stamp in utc
-	unixTime2 := time.Unix(1587121480, 0) //gives unix time stamp in utc
-	fmt.Println(unixTime1.Format("2006-01-02 15:04:05"))
-	fmt.Println(unixTime2.Format("2006-01-02 15:04:05"))
 
-	//test percernt package
-	fmt.Println(percent.PercentFloat(0.3, 200))
-	fmt.Println(percent.PercentOf(5, 200))
+func calculateAverageMaximumChurn() {
+	csvfile, err := os.Open("./nodes_churn.csv")
+	if err != nil {
+		log.Fatalln("Couldn't open the csv file", err)
+	}
+	// Parse the file
+	r := csv.NewReader(csvfile)
 
-	// 1 10136.0
-	// 2 10160.0
-	// 3 9901.0
-	var a, b, testf float64
-	a = 10136.0
-	b = 10160.0
-	testf = (b - a) / a
-	fmt.Printf("%f %% \n", testf*100)
+	// m := make(map[string]int)
+
+	var count int
+	var accumulate, max float64
+	max = 0
+
+	for {
+		// Read each record from csv
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1]) //record[3]
+		var tmp float64
+		tmp, err = strconv.ParseFloat(record[1], 64)
+
+		if max < tmp{
+			max = tmp
+		}
+		accumulate += tmp
+		count++
+	}
+	var ans = accumulate / float64(count)
+	fmt.Printf("average churn rate: %f %% \n", ans*100) //average churn rate: 10.850174 %
+	fmt.Printf("maximum churn rate: %f %% \n", max*100) //maximum churn rate: 3522.046200 % 
 }
-func readblkcsv() (ps plotter.XYs){
-	csvfile, err := os.Open("../read.csv")
+func readblkcsv() (ps plotter.XYs) {
+	csvfile, err := os.Open("/home/hank/go/read.csv")
 	if err != nil {
 		log.Fatalln("Couldn't open the csv file", err)
 	}
@@ -80,15 +102,16 @@ func readblkcsv() (ps plotter.XYs){
 		// 	log.Fatal("Wrong value")
 		// }
 	}
-	fmt.Println(m)
+	// fmt.Println(m)
+	// blk0000 too much, delete
 	delete(m, "0")
 	var points plotter.XYs
 	for k, v := range m {
 
-		// fmt.Println(fmt.Sprintf("%s: %s", k, v))		
+		// fmt.Println(fmt.Sprintf("%s: %s", k, v))
 		kvalue, err := strconv.ParseFloat(k, 64)
-		
-		if err != nil{
+
+		if err != nil {
 			log.Fatal("something wrong")
 		}
 		points = append(points, struct{ X, Y float64 }{kvalue, float64(v)})
@@ -100,8 +123,8 @@ func readblkcsv() (ps plotter.XYs){
 func plotblk() {
 	p, _ := plot.New()
 
-	p.Title.Text = "The blk access pattern of bitcoin nodes from 2020/4/17 to 2020/6/16"
-	p.X.Label.Text = "blk.dat"
+	p.Title.Text = "The blk access pattern of bitcoin nodes"
+	p.X.Label.Text = "blk*.dat"
 	p.Y.Label.Text = "count"
 	p.Add(plotter.NewGrid())
 
@@ -121,7 +144,7 @@ func plotblk() {
 	p.Add(s)
 	p.Legend.Add("scatter", s)
 
-	p.Save(20*vg.Inch, 4*vg.Inch, "blknodes.png")
+	p.Save(20*vg.Inch, 7*vg.Inch, "blknodes.png")
 
 }
 
@@ -185,6 +208,8 @@ func calculateChurn() {
 			// tmptimestamp, err = strconv.ParseInt(record[0], 10, 64)
 			tmptimestamp, err = strconv.ParseFloat(record[0], 64)
 			tmpnodes, err = strconv.ParseFloat(record[1], 64)
+			previoustimestamp = tmptimestamp
+			previousnodes = tmpnodes
 			// churn_rate = 0.0
 		} else {
 			previoustimestamp, err = strconv.ParseFloat(record[0], 64)
@@ -193,38 +218,36 @@ func calculateChurn() {
 			var judgement float64
 			judgement = previousnodes - tmpnodes
 			if judgement > 0 {
-				churn_rate = (judgement / tmpnodes) * 100
+				churn_rate = (judgement / previousnodes) * 100
 				add_nodes = 0
 			} else {
 				churn_rate = 0
 				add_nodes = tmpnodes - previousnodes
-			}
+			}		
+
+			var tmpdata mydata
+			tmpdata.timestamp = int64(tmptimestamp)
+			tmpdata.churn_r = churn_rate
+			tmpdata.add_n = int(add_nodes)
+			dataArr = append(dataArr, tmpdata)
+			points = append(points, struct{ X, Y float64 }{tmptimestamp, churn_rate})
 
 			tmptimestamp = previoustimestamp
 			tmpnodes = previousnodes
 		}
-		var tmpdata mydata
-		tmpdata.timestamp = int64(tmptimestamp)
-		tmpdata.churn_r = churn_rate
-		tmpdata.add_n = int(add_nodes)
-		dataArr = append(dataArr, tmpdata)
-
-		points = append(points, struct{ X, Y float64 }{tmptimestamp, churn_rate})
-
 		counter++
-
-		if churn_rate != 0 && churn_rate > 1 {
-			fmt.Println("pair: ", tmptimestamp, churn_rate)
-		}
+		// if churn_rate != 0 && churn_rate > 1 {
+		// 	fmt.Println("pair: ", tmptimestamp, churn_rate)
+		// }
 	}
 	// fmt.Println(dataArr)
-	writetoCSV(dataArr)
+	writeChurnToCSV(dataArr)
 
 	plotchurn(points)
 
 }
 
-func writetoCSV(data []mydata) {
+func writeChurnToCSV(data []mydata) {
 	// check if nodes.csv exists
 	_, err := os.Open("nodes_churn.csv")
 	if err != nil {
@@ -244,7 +267,11 @@ func writetoCSV(data []mydata) {
 
 	var tocsv [][]string
 	for i := 0; i < len(data); i++ {
-		tocsv = append(tocsv, []string{strconv.FormatInt(data[i].timestamp, 10), fmt.Sprintf("%f", data[i].churn_r), strconv.Itoa(data[i].add_n)})
+		var tmptime int64
+		tmptime = data[i].timestamp
+		unixTimeUTC := time.Unix(tmptime, 0) //gives unix time stamp in utc		
+		// tocsv = append(tocsv, []string{strconv.FormatInt(data[i].timestamp, 10), fmt.Sprintf("%f", data[i].churn_r), strconv.Itoa(data[i].add_n)})
+		tocsv = append(tocsv, []string{unixTimeUTC.Format("2006-01-02 15:04:05"), fmt.Sprintf("%f", data[i].churn_r), strconv.Itoa(data[i].add_n)})
 	}
 	// fmt.Println(tocsv)
 
@@ -287,11 +314,11 @@ func plotsnapshots() {
 	p.Add(s)
 	p.Legend.Add("scatter", s)
 
-	p.Save(15*vg.Inch, 5*vg.Inch, "nodes.png")
+	p.Save(15*vg.Inch, 6*vg.Inch, "nodes.png")
 
 }
 
-func readcsv() plotter.XYs {
+func readcsv() plotter.XYs {	
 	// Open the file
 	csvfile, err := os.Open("nodes.csv")
 	if err != nil {
@@ -438,4 +465,23 @@ func simple() {
 	plotutil.AddLinePoints(p, points)
 
 	p.Save(4*vg.Inch, 4*vg.Inch, "price.png")
+}
+func mytest() {
+	unixTime1 := time.Unix(1592295927, 0) //gives unix time stamp in utc
+	unixTime2 := time.Unix(1587121480, 0) //gives unix time stamp in utc
+	fmt.Println(unixTime1.Format("2006-01-02 15:04:05"))
+	fmt.Println(unixTime2.Format("2006-01-02 15:04:05"))
+
+	//test percernt package
+	fmt.Println(percent.PercentFloat(0.3, 200))
+	fmt.Println(percent.PercentOf(5, 200))
+
+	// 1 10136.0
+	// 2 10160.0
+	// 3 9901.0
+	var a, b, testf float64
+	a = 10136.0
+	b = 10160.0
+	testf = (b - a) / a
+	fmt.Printf("%f %% \n", testf*100)
 }
