@@ -22,15 +22,13 @@ import (
 func main() {
 	// simple()
 	plotsnapshots()
+	// plotsnapshots_V2()
+
 	// RunExample()
-
-	// calculateChurn()
+	calculateChurn()
 	// mytest()
-
-	// plotblk()
-
-	calculateAverageMaximumChurn()
-
+	plotblk()
+	// calculateAverageMaximumChurn()
 }
 
 func calculateAverageMaximumChurn() {
@@ -60,7 +58,7 @@ func calculateAverageMaximumChurn() {
 		var tmp float64
 		tmp, err = strconv.ParseFloat(record[1], 64)
 
-		if max < tmp{
+		if max < tmp {
 			max = tmp
 		}
 		accumulate += tmp
@@ -68,9 +66,9 @@ func calculateAverageMaximumChurn() {
 	}
 	var ans = accumulate / float64(count)
 	fmt.Printf("average churn rate: %f %% \n", ans*100) //average churn rate: 10.850174 %
-	fmt.Printf("maximum churn rate: %f %% \n", max*100) //maximum churn rate: 3522.046200 % 
+	fmt.Printf("maximum churn rate: %f %% \n", max*100) //maximum churn rate: 3522.046200 %
 }
-func readblkcsv() (ps plotter.XYs) {
+func readblkcsv() (ps plotter.XYs, count int) {
 	csvfile, err := os.Open("/home/hank/go/read.csv")
 	if err != nil {
 		log.Fatalln("Couldn't open the csv file", err)
@@ -116,35 +114,36 @@ func readblkcsv() (ps plotter.XYs) {
 		}
 		points = append(points, struct{ X, Y float64 }{kvalue, float64(v)})
 	}
-	return points
+	return points, len(m)
 
 }
 
 func plotblk() {
 	p, _ := plot.New()
 
-	p.Title.Text = "The blk access pattern of bitcoin nodes"
+	p.Title.Text = "The access pattern of blk*.dat files"
 	p.X.Label.Text = "blk*.dat"
 	p.Y.Label.Text = "count"
 	p.Add(plotter.NewGrid())
 
 	var points plotter.XYs
 
-	points = readblkcsv()
+	points, count := readblkcsv()
 	// plotutil.AddLinePoints(p, points)
 
 	// Make a scatter plotter and set its style.
-	s, err := plotter.NewScatter(points)
+	// s, err := plotter.NewScatter(points)
+	s, err := plotter.NewHistogram(points, count)
 	if err != nil {
 		panic(err)
 	}
-	s.GlyphStyle.Color = color.RGBA{R: 255, B: 128, A: 255}
-	s.Shape = draw.PyramidGlyph{}
-	s.GlyphStyle.Radius = vg.Points(5)
+	// s.GlyphStyle.Color = color.RGBA{R: 255, B: 128, A: 255}
+	// s.Shape = draw.PyramidGlyph{}
+	// s.GlyphStyle.Radius = vg.Points(5)
 	p.Add(s)
-	p.Legend.Add("scatter", s)
+	// p.Legend.Add("scatter", s)
 
-	p.Save(20*vg.Inch, 7*vg.Inch, "blknodes.png")
+	p.Save(8*vg.Inch, 4*vg.Inch, "blknodes.png")
 
 }
 
@@ -171,6 +170,25 @@ func plotchurn(points plotter.XYs) {
 	p.Legend.Add("linepoint", s)
 
 	p.Save(15*vg.Inch, 5*vg.Inch, "nodes_churn.png")
+}
+func plotchurn_V2(points plotter.XYs) {
+	p, _ := plot.New()
+
+	p.Title.Text = "The churn rate of bitcoin nodes from 2020/4/17 to 2020/6/16"
+	p.X.Label.Text = "timestamp"
+	p.Y.Label.Text = "churn rate"
+	p.Add(plotter.NewGrid())
+	// var points plotter.XYs
+	s, err := plotter.NewHistogram(points,points.Len())
+	if err != nil {
+		panic(err)
+	}
+	s.Color = color.RGBA{R: 255, A: 255}
+	
+	p.Add(s)
+	// p.Legend.Add("linepoint", s)
+
+	p.Save(8*vg.Inch, 5*vg.Inch, "nodes_churn.png")
 }
 
 type mydata struct {
@@ -223,7 +241,7 @@ func calculateChurn() {
 			} else {
 				churn_rate = 0
 				add_nodes = tmpnodes - previousnodes
-			}		
+			}
 
 			var tmpdata mydata
 			tmpdata.timestamp = int64(tmptimestamp)
@@ -243,7 +261,8 @@ func calculateChurn() {
 	// fmt.Println(dataArr)
 	writeChurnToCSV(dataArr)
 
-	plotchurn(points)
+	// plotchurn(points)
+	plotchurn_V2(points)
 
 }
 
@@ -269,7 +288,7 @@ func writeChurnToCSV(data []mydata) {
 	for i := 0; i < len(data); i++ {
 		var tmptime int64
 		tmptime = data[i].timestamp
-		unixTimeUTC := time.Unix(tmptime, 0) //gives unix time stamp in utc		
+		unixTimeUTC := time.Unix(tmptime, 0) //gives unix time stamp in utc
 		// tocsv = append(tocsv, []string{strconv.FormatInt(data[i].timestamp, 10), fmt.Sprintf("%f", data[i].churn_r), strconv.Itoa(data[i].add_n)})
 		tocsv = append(tocsv, []string{unixTimeUTC.Format("2006-01-02 15:04:05"), fmt.Sprintf("%f", data[i].churn_r), strconv.Itoa(data[i].add_n)})
 	}
@@ -290,15 +309,6 @@ func plotsnapshots() {
 	p.X.Label.Text = "timestamp"
 	p.Y.Label.Text = "number of nodes"
 	p.Add(plotter.NewGrid())
-
-	// points := plotter.XYs{
-	// 	{1592295927, 10462},
-	// 	{1592295633, 10485},
-	// 	{1592295338, 10480},
-	// 	{1592294991, 10515},
-	// 	{1592294614, 10497},
-	// }
-
 	var points plotter.XYs
 
 	points = readcsv()
@@ -310,15 +320,43 @@ func plotsnapshots() {
 		panic(err)
 	}
 	s.GlyphStyle.Color = color.RGBA{R: 255, B: 128, A: 255}
-	s.Shape = draw.PyramidGlyph{}
+	s.Shape = draw.BoxGlyph{}
+	// s.Shape = draw.CrossGlyph{}
+	// s.Shape = draw.CircleGlyph{}
 	p.Add(s)
 	p.Legend.Add("scatter", s)
 
 	p.Save(15*vg.Inch, 6*vg.Inch, "nodes.png")
 
 }
+func plotsnapshots_V2() {
+	p, _ := plot.New()
 
-func readcsv() plotter.XYs {	
+	p.Title.Text = "The snapshots of bitcoin nodes from 2020/4/17 to 2020/6/16"
+	p.X.Label.Text = "timestamp"
+	p.Y.Label.Text = "number of nodes"
+	p.Add(plotter.NewGrid())
+
+	var points plotter.XYs
+
+	points = readcsv()
+	// plotutil.AddLinePoints(p, points)
+
+	// Make a scatter plotter and set its style.
+	s, err := plotter.NewHistogram(points,points.Len())
+	if err != nil {
+		panic(err)
+	}
+	// s.GlyphStyle.Color = color.RGBA{R: 255, B: 128, A: 255}
+	// s.Shape = draw.PyramidGlyph{}
+	s.Color = color.RGBA{R: 255, A: 255}
+	p.Add(s)
+	// p.Legend.Add("scatter", s)
+	p.Save(8*vg.Inch, 6*vg.Inch, "nodes.png")
+
+}
+
+func readcsv() plotter.XYs {
 	// Open the file
 	csvfile, err := os.Open("nodes.csv")
 	if err != nil {
@@ -332,7 +370,8 @@ func readcsv() plotter.XYs {
 	//my code
 	var points plotter.XYs
 
-	var count int
+	var count,min int	
+	min = 100000
 	// Iterate through the records
 	for {
 		// Read each record from csv
@@ -352,8 +391,13 @@ func readcsv() plotter.XYs {
 		// 	fmt.Println("the pair is: ", record[0], record[1])
 		// }
 		count++
+		if min > int(y){
+			min = int(y)			
+		}
+		
 	}
-	fmt.Println("total: ", count)
+	fmt.Println("min: ", min) //6053
+	fmt.Println("total: ", count) //15250
 	return points
 }
 
