@@ -20,27 +20,29 @@ func main() {
 
 	//replication factor, storage limit per node (10G -> 80blks, 15G->120blks) blk02116
 	// number of nodes, churn rate (just calculate difference)
-	var nodes []Data
-	nodes = readCSV()
 
-	churn_n := readChurnCSV()
+	// var nodes []Data
+	// nodes = readCSV()
 
-	for i := len(nodes) - 1; i > 0; i-- {
-		if i == len(nodes)-1 {
-			// initiate first environment
+	// churn_n := readChurnCSV()
 
-		}
+	// for i := len(nodes) - 1; i > 0; i-- {
+	// 	if i == len(nodes)-1 {
+	// 		// initiate first environment
 
-		// fmt.Println(nodes[i])
-	}
+	// 	}
+
+	// 	// fmt.Println(nodes[i])
+	// }
 
 }
+
 type LiveNode struct {
-    Name string    
+	Name     string
 	numofblk int
-	blk []string
-	alive bool
-	isfull bool
+	blk      []string
+	alive    bool
+	isfull   bool
 }
 type ChurnData struct {
 	timestamp int64
@@ -73,10 +75,10 @@ func readChurnCSV() (churn_n []ChurnData) {
 		}
 		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1], record[2])
 		var data ChurnData
-		data.timestamp, err = strconv.ParseInt(record[0],10, 64)
+		data.timestamp, err = strconv.ParseInt(record[0], 10, 64)
 		data.churn_r, err = strconv.ParseFloat(record[1], 64)
 		data.add_n, err = strconv.Atoi(record[1])
-		churn_nodes=append(churn_nodes,data)
+		churn_nodes = append(churn_nodes, data)
 	}
 	return churn_nodes
 }

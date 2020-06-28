@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/negah/percent"
+	"github.com/rcrowley/go-metrics"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
@@ -20,15 +21,16 @@ import (
 )
 
 func main() {
-	// simple()
-	plotsnapshots()
+	
+	// plotsnapshots()
 	// plotsnapshots_V2()
+	
+	// calculateChurn()	
+	// plotblk()
 
-	// RunExample()
-	calculateChurn()
-	// mytest()
-	plotblk()
 	// calculateAverageMaximumChurn()
+
+	testplot()
 }
 
 func calculateAverageMaximumChurn() {
@@ -179,12 +181,12 @@ func plotchurn_V2(points plotter.XYs) {
 	p.Y.Label.Text = "churn rate"
 	p.Add(plotter.NewGrid())
 	// var points plotter.XYs
-	s, err := plotter.NewHistogram(points,points.Len())
+	s, err := plotter.NewHistogram(points, points.Len())
 	if err != nil {
 		panic(err)
 	}
 	s.Color = color.RGBA{R: 255, A: 255}
-	
+
 	p.Add(s)
 	// p.Legend.Add("linepoint", s)
 
@@ -343,7 +345,7 @@ func plotsnapshots_V2() {
 	// plotutil.AddLinePoints(p, points)
 
 	// Make a scatter plotter and set its style.
-	s, err := plotter.NewHistogram(points,points.Len())
+	s, err := plotter.NewHistogram(points, points.Len())
 	if err != nil {
 		panic(err)
 	}
@@ -370,7 +372,7 @@ func readcsv() plotter.XYs {
 	//my code
 	var points plotter.XYs
 
-	var count,min int	
+	var count, min int
 	min = 100000
 	// Iterate through the records
 	for {
@@ -391,12 +393,12 @@ func readcsv() plotter.XYs {
 		// 	fmt.Println("the pair is: ", record[0], record[1])
 		// }
 		count++
-		if min > int(y){
-			min = int(y)			
+		if min > int(y) {
+			min = int(y)
 		}
-		
+
 	}
-	fmt.Println("min: ", min) //6053
+	fmt.Println("min: ", min)     //6053
 	fmt.Println("total: ", count) //15250
 	return points
 }
@@ -528,4 +530,25 @@ func mytest() {
 	b = 10160.0
 	testf = (b - a) / a
 	fmt.Printf("%f %% \n", testf*100)
+}
+
+func testplot() {
+	s := metrics.NewExpDecaySample(1024, 0.015) // or metrics.NewUniformSample(1028)
+
+	h := metrics.NewHistogram(s)
+
+	metrics.Register("baz", h)
+	h.Update(1)
+
+	go metrics.Log(metrics.DefaultRegistry,
+		1*time.Second,
+		log.New(os.Stdout, "metrics: ", log.Lmicroseconds))
+
+	var j int64
+	j = 1
+	for true {
+		time.Sleep(time.Second * 1)
+		j++
+		h.Update(j)
+	}
 }
