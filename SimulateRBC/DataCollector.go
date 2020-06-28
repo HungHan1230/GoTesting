@@ -69,7 +69,7 @@ func appendToJson(nodesjson map[string]json.RawMessage, totalNodes string, filen
 	if err != nil {
 		fmt.Println("something wrong while writing json!")
 	}
-	var path string = "../../../node_jsons_reverse/" + filename + ".json"
+	var path string = "../../node_jsons_reverse/" + filename + ".json"
 	// Write to file
 	_ = ioutil.WriteFile(path, file, 0644)
 
@@ -122,7 +122,7 @@ func GetSnapshotsWithTimestamps(timestamp string) (judge bool) {
 
 func GetTimestamps() (list []string) {
 	// Open the file
-	csvfile, err := os.Open("nodes_snapshots_COPY.csv")
+	csvfile, err := os.Open("nodes_snapshots_reverse.csv")
 	if err != nil {
 		log.Fatalln("Couldn't open the csv file", err)
 	}
