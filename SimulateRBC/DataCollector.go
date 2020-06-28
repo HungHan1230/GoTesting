@@ -69,7 +69,7 @@ func appendToJson(nodesjson map[string]json.RawMessage, totalNodes string, filen
 	if err != nil {
 		fmt.Println("something wrong while writing json!")
 	}
-	var path string = "./node_jsons_reverse/" + filename + ".json"
+	var path string = "../../../node_jsons_reverse/" + filename + ".json"
 	// Write to file
 	_ = ioutil.WriteFile(path, file, 0644)
 
