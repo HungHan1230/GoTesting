@@ -13,15 +13,15 @@ func main() {
 	// plotsnapshots()
 	// // getfromTimestamp()
 	// // test()
-	// timestamplist := GetTimestamps()
+	timestamplist := GetTimestamps()
 
-	// for i := 0; i < len(timestamplist); i++ {
-	// 	fmt.Println("downlaoding timestamp: ", timestamplist[i])
-	// 	if !GetSnapshotsWithTimestamps(timestamplist[i]){
-	// 		fmt.Println("request got throttled")
-	// 		break
-	// 	}
-	// }
+	for i := 0; i < len(timestamplist); i++ {
+		fmt.Println("downlaoding timestamp: ", timestamplist[i])
+		if !GetSnapshotsWithTimestamps(timestamplist[i]){
+			fmt.Println("request got throttled")
+			break
+		}
+	}
 
 	// mytest()
 
