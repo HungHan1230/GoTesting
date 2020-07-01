@@ -15,10 +15,69 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 )
 
+func plottest(points plotter.XYs){
+	p, _ := plot.New()
+
+	p.Title.Text = "The cumulative graph of churn nodes"
+	p.X.Label.Text = "churn nodes"
+	p.Y.Label.Text = "count"
+	p.Add(plotter.NewGrid())
+	// var points plotter.XYs
+	s, err := plotter.NewHistogram(points, points.Len())
+	if err != nil {
+		panic(err)
+	}
+	// s.Color = color.RGBA{R: 255, A: 255}
+
+	p.Add(s)
+	// p.Legend.Add("linepoint", s)
+
+	p.Save(8*vg.Inch, 5*vg.Inch, "nodes_test.png")
+
+}
+
+func plotchurn(points plotter.XYs) {
+	p, _ := plot.New()
+
+	p.Title.Text = "The churn rate of bitcoin nodes each timestamps"
+	p.X.Label.Text = "timestamp"
+	p.Y.Label.Text = "churn rate (%)"
+	p.Add(plotter.NewGrid())
+	// var points plotter.XYs
+	s, err := plotter.NewHistogram(points, points.Len())
+	if err != nil {
+		panic(err)
+	}
+	s.Color = color.RGBA{R: 255, A: 255}
+
+	p.Add(s)
+	// p.Legend.Add("linepoint", s)
+
+	p.Save(8*vg.Inch, 5*vg.Inch, "nodes_churn.png")
+}
+func plotadd_r(points plotter.XYs) {
+	p, _ := plot.New()
+
+	p.Title.Text = "The add rate of bitcoin nodes each timestamps"
+	p.X.Label.Text = "timestamp"
+	p.Y.Label.Text = "add rate (%)"
+	p.Add(plotter.NewGrid())
+	// var points plotter.XYs
+	s, err := plotter.NewHistogram(points, points.Len())
+	if err != nil {
+		panic(err)
+	}
+	s.Color = color.RGBA{R: 255, A: 255}
+
+	p.Add(s)
+	// p.Legend.Add("linepoint", s)
+
+	p.Save(8*vg.Inch, 5*vg.Inch, "nodes_add_r.png")
+}
 func plotsnapshots() {
 	p, _ := plot.New()
 
-	p.Title.Text = "The snapshots of bitcoin nodes from 2020/4/17 to 2020/6/16"
+	p.Title.Text = "The snapshots of bitcoin nodes from 2020/4/30 1:35:30 to 2020/5/31 23:56:15"
 	p.X.Label.Text = "timestamp"
 	p.Y.Label.Text = "number of nodes"
 	p.Add(plotter.NewGrid())
@@ -45,7 +104,7 @@ func plotsnapshots() {
 
 func readcsv() plotter.XYs {
 	// Open the file
-	csvfile, err := os.Open("nodes_snapshots.csv")
+	csvfile, err := os.Open("nodes_snapshots_reverse_forchurn.csv")
 	if err != nil {
 		log.Fatalln("Couldn't open the csv file", err)
 	}
@@ -70,6 +129,9 @@ func readcsv() plotter.XYs {
 			log.Fatal(err)
 		}
 		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
+		if record[0] == "1590940575"{
+			break
+		}
 		var x, y float64
 		x, err = strconv.ParseFloat(record[0], 64)
 		y, err = strconv.ParseFloat(record[1], 64)

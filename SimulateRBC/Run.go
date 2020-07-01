@@ -5,29 +5,141 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
+	"math/rand"
 	"os"
+	"strconv"
+	"time"
 )
 
 func main() {
+	// collect data from bitnodes' apis
 	// GetNodeSnapshots()
-	// plotsnapshots()
+	plotsnapshots()
 	// // getfromTimestamp()
 	// // test()
-	timestamplist := GetTimestamps()
 
-	for i := 0; i < len(timestamplist); i++ {
-		fmt.Println("downlaoding timestamp: ", timestamplist[i])
-		if !GetSnapshotsWithTimestamps(timestamplist[i]){
-			fmt.Println("request got throttled")
-			break
+	// Get snapshots/timestamp
+	// timestamplist := GetTimestamps()
+	// for i := 0; i < len(timestamplist); i++ {
+	// 	fmt.Println("downlaoding timestamp: ", timestamplist[i])
+	// 	if !GetSnapshotsWithTimestamps(timestamplist[i]) {
+	// 		fmt.Println("request got throttled")
+	// 		break
+	// 	}
+	// }
+
+	// The testing of process.go
+	// mytest()
+	// mytest2()
+	// GetFilesName()
+
+	// reverse the node_snapshots.csv, let it be the acsending order
+	// readcsv_reverse()
+
+	// calculate churn
+	// calculateChurn()
+	// calculateDailyChurnCumulative()
+
+	// calculate churn in cumulative form
+	// calculateChurnCumulative()
+	caluculateCount()
+	
+	//simulation test
+	simulate()
+
+}
+
+// the necessary function for using random APIs
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+func simulate() {
+	var numofBlk float64 = 2116
+	var replication_factor float64 = 1
+	var storagelimit_pernode float64 = 10 //GB
+	min := 0
+	max := 100 //actually depends on the nodes we want to simulate
+
+	// var numofblklimit_pernode float64 = math.Ceil(10 * 1024 / 128)
+	// total_GB := numofBlk * replication_factor * 0.128
+	// require_nodes := math.Ceil(total_GB / storagelimit_pernode)
+	maximum_numofblk_pernode := math.Ceil(storagelimit_pernode * 1024 / 128)
+	// fmt.Println(maximum_numofblk_pernode)
+
+	datanode_m := make(map[int][]string)
+
+	var tmpnumofblk int = int(numofBlk)
+
+	for i := 0; i < int(numofBlk); i++ {
+		for j := 0; j < int(replication_factor); j++ {
+			num := rand.Intn(max-min) + min
+			blknum := strconv.Itoa(tmpnumofblk)
+
+			//avoid the same num
+			var previous_num []int
+			for k := 0; k < len(previous_num); k++ {
+				if previous_num[k] == num {
+					num++
+					break
+				} else {
+					previous_num[k] = num
+				}
+			}
+			// assign blk
+			if datanode_m[num] != nil && len(datanode_m[num]) <= int(maximum_numofblk_pernode) {
+				datanode_m[num] = append(datanode_m[num], "blk"+blknum)
+
+			} else {
+				// the case that the node's storage is full, then we assign to the other node who has enough space
+				if len(datanode_m[num]) > int(maximum_numofblk_pernode) {
+					for s := 0; s < len(datanode_m); s++ {
+						if len(datanode_m[s]) < int(maximum_numofblk_pernode) {
+							datanode_m[s] = append(datanode_m[s], "blk"+blknum)
+						}
+					}
+				} else {
+					// initialization
+					datanode_m[num] = []string{"blk" + blknum}
+				}
+
+			}
+
+			// datanode_m[num] = append
+		}
+		tmpnumofblk--
+	}
+	fmt.Println(datanode_m)
+
+}
+
+func test() {
+	// var total_nodes int = 500
+	min := 10
+	max := 30
+	fmt.Println(rand.Intn(max-min) + min)
+
+	var numofBlk float64 = 3000
+	replication_factor := []float64{1, 2, 4, 8}
+	var GBslice []float64
+	for i := 0; i < len(replication_factor); i++ {
+		GBslice = append(GBslice, replication_factor[i]*numofBlk*0.128)
+	}
+	fmt.Println(GBslice)
+	// d1 := [4]float64{265,529,1052,2116}
+	d2 := [4]string{"Baseline", "R2", "R4", "R8"}
+	s1 := [7]float64{2, 4, 8, 10, 16, 32, 64}
+
+	for i := 0; i < len(GBslice); i++ {
+		fmt.Println("Replicaiton factor: ", d2[i])
+		for j := 0; j < len(s1); j++ {
+			ans := GBslice[i] / s1[j]
+			// fmt.Printf("storage limit: %f, nodes: %f \n",s1[j], ans)
+			fmt.Printf("storage limit: %f, nodes: ", s1[j])
+			fmt.Println(math.Ceil(ans))
 		}
 	}
-
-	// mytest()
-
-	// mytest2()
-	GetFilesName()
-	// readcsv_reverse()
 
 }
 
@@ -54,13 +166,13 @@ func readcsv_reverse() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
+		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
 		slice1 = append(slice1, record[0])
 		slice2 = append(slice2, record[1])
 	}
 
 	for i := len(slice1) - 1; i <= len(slice1); i-- {
-		appendToCSV_pure(slice1[i], slice2[i], "nodes_snapshots_reverse.csv")
+		appendToCSV_pure(slice1[i], slice2[i], "nodes_snapshots_reverse_forchurn.csv")
 	}
 
 }

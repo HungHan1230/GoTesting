@@ -94,14 +94,14 @@ func GetSnapshotsWithTimestamps(timestamp string) (judge bool) {
 	if err != nil {
 		return
 	}
-	
+
 	// if request got throttle, return false to terminate the program.
 	var jud bool
-	for k, _ := range result{
-		if k != "detail"{
+	for k, _ := range result {
+		if k != "detail" {
 			jud = true
 			break
-		}else{
+		} else {
 			jud = false
 		}
 	}
@@ -113,10 +113,9 @@ func GetSnapshotsWithTimestamps(timestamp string) (judge bool) {
 		nodesjson := make(map[string]json.RawMessage)
 		err = json.Unmarshal(nodes, &nodesjson)
 		appendToJson(nodesjson, string(total_nodes), timestamp)
-		
+
 	}
 	return jud
-	
 
 }
 
@@ -145,6 +144,48 @@ func GetTimestamps() (list []string) {
 
 	}
 	return timestamplist
+}
+
+func GetChurn() []mydata {
+	// Open the file
+	csvfile, err := os.Open("nodes_churn.csv")
+	if err != nil {
+		log.Fatalln("Couldn't open the csv file", err)
+	}
+	// Parse the file
+	r := csv.NewReader(csvfile)
+	// m := make(map[string]int)
+	var data []mydata
+
+	// Iterate through the records
+	for {
+		// Read each record from csv
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
+
+		if record[0] =="1590941023"{
+			break
+		}
+
+		var element mydata
+		element.timestamp, _ = strconv.ParseInt(record[0], 10, 64)
+		element.nodes, _ = strconv.Atoi(record[1])
+		element.churn_r, _ = strconv.ParseFloat(record[3], 64)
+		element.churn_n, _ = strconv.Atoi(record[4])
+		element.add_n, _ = strconv.Atoi(record[5])
+		element.add_r, _ = strconv.ParseFloat(record[6], 64)
+		// fmt.Println(element)
+		data = append(data, element)
+
+	}
+	return data
+
 }
 
 func appendToCSV(data Data, csvfile string) {
