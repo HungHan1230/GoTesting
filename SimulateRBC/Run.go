@@ -8,14 +8,14 @@ import (
 	"math"
 	"math/rand"
 	"os"
-	"strconv"
 	"time"
 )
 
 func main() {
 	// collect data from bitnodes' apis
 	// GetNodeSnapshots()
-	plotsnapshots()
+	// plotsnapshots()
+
 	// // getfromTimestamp()
 	// // test()
 
@@ -43,75 +43,28 @@ func main() {
 
 	// calculate churn in cumulative form
 	// calculateChurnCumulative()
-	caluculateCount()
-	
+	// caluculateCount()
+
 	//simulation test
-	simulate()
+	// simulate()
+
+	// RecordStateInEachSnapshots()
+
+	// find who is always up in the snapshots
+	// WhoIsAlwaysUp()
+
+	// get first result
+	// assignblkToFirst()
+	// assignblkToFirst_withEmpty()
+
+	// record the lost and repair in each timestamp
+	calculateLostAndRepair()	
 
 }
 
 // the necessary function for using random APIs
 func init() {
 	rand.Seed(time.Now().UnixNano())
-}
-
-func simulate() {
-	var numofBlk float64 = 2116
-	var replication_factor float64 = 1
-	var storagelimit_pernode float64 = 10 //GB
-	min := 0
-	max := 100 //actually depends on the nodes we want to simulate
-
-	// var numofblklimit_pernode float64 = math.Ceil(10 * 1024 / 128)
-	// total_GB := numofBlk * replication_factor * 0.128
-	// require_nodes := math.Ceil(total_GB / storagelimit_pernode)
-	maximum_numofblk_pernode := math.Ceil(storagelimit_pernode * 1024 / 128)
-	// fmt.Println(maximum_numofblk_pernode)
-
-	datanode_m := make(map[int][]string)
-
-	var tmpnumofblk int = int(numofBlk)
-
-	for i := 0; i < int(numofBlk); i++ {
-		for j := 0; j < int(replication_factor); j++ {
-			num := rand.Intn(max-min) + min
-			blknum := strconv.Itoa(tmpnumofblk)
-
-			//avoid the same num
-			var previous_num []int
-			for k := 0; k < len(previous_num); k++ {
-				if previous_num[k] == num {
-					num++
-					break
-				} else {
-					previous_num[k] = num
-				}
-			}
-			// assign blk
-			if datanode_m[num] != nil && len(datanode_m[num]) <= int(maximum_numofblk_pernode) {
-				datanode_m[num] = append(datanode_m[num], "blk"+blknum)
-
-			} else {
-				// the case that the node's storage is full, then we assign to the other node who has enough space
-				if len(datanode_m[num]) > int(maximum_numofblk_pernode) {
-					for s := 0; s < len(datanode_m); s++ {
-						if len(datanode_m[s]) < int(maximum_numofblk_pernode) {
-							datanode_m[s] = append(datanode_m[s], "blk"+blknum)
-						}
-					}
-				} else {
-					// initialization
-					datanode_m[num] = []string{"blk" + blknum}
-				}
-
-			}
-
-			// datanode_m[num] = append
-		}
-		tmpnumofblk--
-	}
-	fmt.Println(datanode_m)
-
 }
 
 func test() {

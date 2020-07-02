@@ -36,7 +36,7 @@ func caluculateCount() {
 		}
 
 	}
-	fmt.Println(m)
+	fmt.Println("record the frequencies of churn nodes: ", m)
 
 	var total int = 0
 	m2 := make(map[int]int)
@@ -46,13 +46,15 @@ func caluculateCount() {
 		keys = append(keys, k)
 		total += v
 	}
+	// sort the keys slice
 	sort.Ints(keys)
-	fmt.Println(keys)
-	// var tmp int = 0
+	// fmt.Println(keys)
+
+	// prepare points for plotting
 	var points plotter.XYs
 	for i := 0; i < len(keys); i++ {
 		// fmt.Println(keys[i])
-		if keys[i] > 300{
+		if keys[i] > 300 {
 			continue
 		}
 		m2[keys[i]] = total
@@ -60,12 +62,9 @@ func caluculateCount() {
 		points = append(points, struct{ X, Y float64 }{float64(keys[i]), float64(total)})
 		total -= m[keys[i]]
 	}
-	fmt.Println(m2)
-
+	fmt.Println("The cumulative calculation of churn nodes: ", m2)
+	// plot cumulative graph of churn nodes
 	plottest(points)
-
-
-
 }
 
 func calculateDailyChurnCumulative() {
@@ -106,7 +105,7 @@ func calculateDailyChurnCumulative() {
 		}
 
 	}
-	fmt.Println(day_map)
+	fmt.Println("dat_map: ", day_map)
 
 }
 
@@ -154,6 +153,10 @@ func calculateChurn() {
 		}
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		if record[0] == "1590940575" {
+			break
 		}
 		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
 		if counter == 1 {

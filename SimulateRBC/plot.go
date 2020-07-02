@@ -28,10 +28,8 @@ func plottest(points plotter.XYs){
 		panic(err)
 	}
 	// s.Color = color.RGBA{R: 255, A: 255}
-
 	p.Add(s)
 	// p.Legend.Add("linepoint", s)
-
 	p.Save(8*vg.Inch, 5*vg.Inch, "nodes_test.png")
 
 }
