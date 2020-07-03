@@ -31,16 +31,16 @@ func calculateLostAndRepair() {
 	}
 	// Initialization of variables
 	repair := make(map[string][]string)
-	states := make(map[string]string)	
+	states := make(map[string]string)
 	var previous_timestamp time.Time
-	init_timestamp,_ := strconv.ParseInt(names_Blk[0],10,64)
-	previous_timestamp = time.Unix(init_timestamp,0)
+	init_timestamp, _ := strconv.ParseInt(names_Blk[0], 10, 64)
+	previous_timestamp = time.Unix(init_timestamp, 0)
 
 	// record each iteration of states
 	for i := 1; i < len(names_States); i++ {
 		// convert timestamp and assigned by current_timestamp
 		current, err := strconv.ParseInt(names_States[i], 10, 64)
-		current_timestamp := time.Unix(current, 0)		
+		current_timestamp := time.Unix(current, 0)
 
 		byteValue, err := ioutil.ReadFile(path_Status + names_States[i] + "_states.json")
 		if err != nil {
@@ -52,19 +52,25 @@ func calculateLostAndRepair() {
 			fmt.Println("something wrong while parsing json!")
 		}
 		// repair time = 10mins, first examines the timestamp has already 10 mins (two snapshots), then add the repair element to the nodes that isn't preversed blk
-		current_timestamp.Sub(previous_timestamp)
-		// if diff.Minutes() > 5 {
-		// 	for _, v := range repair {
-		// 		for kf, vf := range first_state {
-		// 			if len(vf) == 0 {
-		// 				first_state[kf] = v
-		// 				break
-		// 			}
-		// 		}
-		// 	}
-		// 	fmt.Println("repair time: ", names_States[i])
-		// 	fmt.Println(repair)
-		// }
+		diff := current_timestamp.Sub(previous_timestamp)
+		// fmt.Println(diff.Minutes())
+		if diff.Minutes() > 10 {
+			for k, v := range repair {
+				for kf, vf := range first_state {
+					if len(vf) == 0 {
+						first_state[kf] = v
+						delete(repair,k)
+						break
+					}
+				}
+			}
+			// fmt.Println("repair time: ", names_States[i])
+			// fmt.Println(repair)
+		
+			//remember the timestamp as preivous_timestamp for the next iteration
+			forprevious_timestamp, _ := strconv.ParseInt(names_States[i], 10, 64)
+			previous_timestamp = time.Unix(forprevious_timestamp, 0)
+		}		
 
 		// Iterate elements in states, if the value is off or left, remove from the first_state, if the value is join, add to first_state with empty string slice.
 		for k, v := range states {
@@ -79,9 +85,6 @@ func calculateLostAndRepair() {
 		//output this state
 		outputStates(first_state, names_States[i])
 
-		//remember the timestamp as preivous_timestamp for the next iteration
-		forprevious_timestamp,_ := strconv.ParseInt(names_States[i],10,64)
-		previous_timestamp = time.Unix(forprevious_timestamp,0)
 	}
 
 }
