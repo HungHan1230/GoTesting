@@ -50,15 +50,20 @@ func main() {
 
 	// RecordStateInEachSnapshots()
 
+
+	//-------------------Run----------------------------
 	// find who is always up in the snapshots
 	// WhoIsAlwaysUp()
-
+	
 	// get first result
 	// assignblkToFirst()
 	// assignblkToFirst_withEmpty()
 
-	// record the lost and repair in each timestamp
-	calculateLostAndRepair()	
+	// // record the lost and repair in each timestamp
+	// calculateLostAndRepair()	
+
+	//-------------------Analysis-----------------------
+	RunAnalysis()
 
 }
 

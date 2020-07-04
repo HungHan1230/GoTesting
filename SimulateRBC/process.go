@@ -59,18 +59,18 @@ func calculateLostAndRepair() {
 				for kf, vf := range first_state {
 					if len(vf) == 0 {
 						first_state[kf] = v
-						delete(repair,k)
+						delete(repair, k)
 						break
 					}
 				}
 			}
 			// fmt.Println("repair time: ", names_States[i])
 			// fmt.Println(repair)
-		
+
 			//remember the timestamp as preivous_timestamp for the next iteration
 			forprevious_timestamp, _ := strconv.ParseInt(names_States[i], 10, 64)
 			previous_timestamp = time.Unix(forprevious_timestamp, 0)
-		}		
+		}
 
 		// Iterate elements in states, if the value is off or left, remove from the first_state, if the value is join, add to first_state with empty string slice.
 		for k, v := range states {
@@ -100,9 +100,9 @@ func outputStates(state_map map[string][]string, name string) {
 
 func assignblkToFirst() {
 	// churn_record := GetChurn()
-	names := GetFilesName("../../nodes/nodes_states_backup")
+	names := GetFilesName("../../nodes/nodes_states")
 	// fmt.Println(names)
-	var path string = "../../nodes/nodes_states_backup"
+	var path string = "../../nodes/nodes_states"
 	first_state := make(map[string]string)
 	byteValue, err := ioutil.ReadFile(path + "/" + names[0] + "_states.json")
 	if err != nil {
@@ -157,9 +157,9 @@ func assignblkToFirst() {
 
 }
 func assignblkToFirst_withEmpty() {
-	namesofstates := GetFilesName("../../nodes/nodes_states_backup")
+	namesofstates := GetFilesName("../../nodes/nodes_states")
 	first_state := make(map[string]string)
-	byteValue, err := ioutil.ReadFile("../../nodes/nodes_states_backup/" + namesofstates[0] + "_states.json")
+	byteValue, err := ioutil.ReadFile("../../nodes/nodes_states/" + namesofstates[0] + "_states.json")
 	if err != nil {
 		fmt.Println(err)
 		// return err
@@ -171,9 +171,9 @@ func assignblkToFirst_withEmpty() {
 		// return err
 	}
 
-	namesofBlk := GetFilesName("../../nodes/nodes_withBlk_state_backup")
+	namesofBlk := GetFilesName("../../nodes/nodes_withBlk_state")
 	first_stateWithBlk := make(map[string][]string)
-	byteValue, err = ioutil.ReadFile("../../nodes/nodes_withBlk_state_backup/" + namesofBlk[0] + "_states.json")
+	byteValue, err = ioutil.ReadFile("../../nodes/nodes_withBlk_state/" + namesofBlk[0] + "_states.json")
 	if err != nil {
 		fmt.Println(err)
 		// return err
@@ -203,7 +203,7 @@ func assignblkToFirst_withEmpty() {
 		fmt.Println("something wrong while writing json!")
 	}
 	// Write to file
-	_ = ioutil.WriteFile("../../nodes/nodes_withBlk_state_backup/"+namesofBlk[0]+"_states.json", file, 0644)
+	_ = ioutil.WriteFile("../../nodes/nodes_withBlk_state/"+namesofBlk[0]+"_states.json", file, 0644)
 
 }
 
@@ -218,49 +218,112 @@ func FindAnotherNum(dontrepeat map[int]int, target int) int {
 	return ans
 
 }
-
 func WhoIsAlwaysUp() {
-	names := GetFilesName("../../nodes/nodes_states_backup")
-	whosUp := make(map[string]int)
-	var result map[string]string
+	names := GetFilesName("../../nodes/test")
+	var previous []string
+
 	for i := 0; i < len(names); i++ {
-		var path string = "../../nodes/node_jsons_reverse/" + names[i] + ".json"
-		byteValue, err := ioutil.ReadFile(path)
+		var current []string
+		var path1 string = "../../nodes/test/" + names[i] + ".json"
+		//read path1
+		byteValue, err := ioutil.ReadFile(path1)
 		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		var result map[string]json.RawMessage
+		err = json.Unmarshal(byteValue, &result)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		if i == 0 {
+			for k, _ := range result {
+				previous = append(previous, k)
+			}
+		} else {
+			for k, _ := range result {
+				current = append(current, k)
+			}
+			whosUp := WhoisSurvive(previous, current)
+			fmt.Println(len(whosUp))
+			previous = current
+		}
+
+	}
+
+}
+
+func WhoIsAlwaysUp_() {
+	names := GetFilesName("../../nodes/test")
+	// var path1 string = "../../nodes/node_jsons_reverse/" + names[0] + ".json"
+	// var path2 string = "../../nodes/node_jsons_reverse/" + "1588410937" + ".json"
+	var result map[string]json.RawMessage
+	var result2 map[string]json.RawMessage
+	var keys1, keys2 []string
+	for i := 0; i < len(names); i++ {
+		var path1 string = "../../nodes/test/" + names[i] + ".json"
+		//read path1
+		byteValue, err := ioutil.ReadFile(path1)
+		if err != nil {
+			fmt.Println(err)
 			fmt.Println("something wrong!")
 			// return err
 		}
+		if i == 0 {
+			err = json.Unmarshal(byteValue, &result)
+			if err != nil {
+				// fmt.Println("something wrong while parsing json!")
+				fmt.Println(err)
+				// return err
+			}
 
-		err = json.Unmarshal(byteValue, &result)
-		if err != nil {
-			fmt.Println("something wrong while parsing json!")
-			// return err
+		} else {
+			err = json.Unmarshal(byteValue, &result2)
+			if err != nil {
+				// fmt.Println("something wrong while parsing json!")
+				fmt.Println(err)
+				// return err
+			}
+
 		}
+
 		for k, _ := range result {
-			if whosUp[k] == 0 {
-				whosUp[k] = 1
-			} else {
-				whosUp[k] = whosUp[k] + 1
+			keys1 = append(keys1, k)
+		}
+		for k, _ := range result2 {
+			keys2 = append(keys2, k)
+		}
+
+	}
+	whosUp := WhoisSurvive(keys1, keys2)
+	fmt.Println(whosUp)
+	fmt.Println(len(whosUp))
+
+}
+
+func WhoisSurvive(first []string, second []string) []string {
+	var survivors []string
+
+	for i := range first {
+		for j := range second {
+			if first[i] == second[j] {
+				survivors = append(survivors, first[i])
+				break
 			}
 		}
 	}
-	// if the count of a node is not the length of names, it means that the node is not always up, then remove it from the map.
-	for k, _ := range whosUp {
-		if whosUp[k] != len(names) {
-			delete(whosUp, k)
-		}
-	}
 
-	fmt.Println(whosUp)
+	return survivors
 
 }
 
 func simulate() map[int][]string {
 	var numofBlk float64 = 2116
-	var replication_factor float64 = 1
-	var storagelimit_pernode float64 = 10 //GB
+	var replication_factor float64 = 8
+	var storagelimit_pernode float64 = 5 //GB
 	min := 0
-	simulate_nodes := 100 //actually depends on the nodes we want to simulate
+	simulate_nodes := 1000 //actually depends on how many prover nodes we want to simulate
 
 	maximum_numofblk_pernode := math.Ceil(storagelimit_pernode * 1024 / 128)
 	// fmt.Println(maximum_numofblk_pernode)

@@ -34,6 +34,7 @@ func GetFilesName(path string) []string {
 
 	var k []string
 	for _, file := range files {
+		// fmt.Println(file.Name())
 		k = append(k, file.Name()[:10])
 		// fmt.Println(file.Name()[:10])
 		// fmt.Println(file.Name()[:10])
