@@ -15,10 +15,7 @@ func main() {
 	// collect data from bitnodes' apis
 	// GetNodeSnapshots()
 	// plotsnapshots()
-
-	// // getfromTimestamp()
-	// // test()
-
+	
 	// Get snapshots/timestamp
 	// timestamplist := GetTimestamps()
 	// for i := 0; i < len(timestamplist); i++ {
@@ -28,42 +25,40 @@ func main() {
 	// 		break
 	// 	}
 	// }
-
-	// The testing of process.go
-	// mytest()
-	// mytest2()
-	// GetFilesName()
-
-	// reverse the node_snapshots.csv, let it be the acsending order
-	// readcsv_reverse()
-
-	// calculate churn
-	// calculateChurn()
-	// calculateDailyChurnCumulative()
-
-	// calculate churn in cumulative form
-	// calculateChurnCumulative()
-	// caluculateCount()
-
-	//simulation test
-	// simulate()
-
-	// RecordStateInEachSnapshots()
-
-
-	//-------------------Run----------------------------
+	
+	// %------------------------------Run------------------------------%
 	// find who is always up in the snapshots
 	// WhoIsAlwaysUp()
 	
-	// get first result
-	// assignblkToFirst()
-	// assignblkToFirst_withEmpty()
-
+	// --------get Baseline result--------
+	// assignblkToFirst("Baseline_norepair_",500)
+	// assignblkToFirst_withEmpty("Baseline_norepair_")
 	// // record the lost and repair in each timestamp
-	// calculateLostAndRepair()	
+	// calculateLostAndRepair("Baseline_norepair_")	
 
-	//-------------------Analysis-----------------------
-	RunAnalysis()
+	RunProcess("Baseline_norepair_",500, false)
+
+	// --------get R2 result--------
+	// assignblkToFirst("R2_")
+	// assignblkToFirst_withEmpty("R2_")
+	// // record the lost and repair in each timestamp
+	// calculateLostAndRepair("R2_")	
+
+	// --------get R4 result--------
+	// assignblkToFirst("R4_")
+	// assignblkToFirst_withEmpty("R4_")
+	// // record the lost and repair in each timestamp
+	// calculateLostAndRepair("R4_")	
+
+	// --------get R8 result--------
+	// assignblkToFirst("R8_")
+	// assignblkToFirst_withEmpty("R8_")
+	// // record the lost and repair in each timestamp
+	// calculateLostAndRepair("R8_")	
+
+
+	// %------------------------------Analysis------------------------------%
+	// RunAnalysis()
 
 }
 
@@ -258,3 +253,25 @@ func readcsv_reverse() {
 // 	GetNodeSnapshots()
 
 // }
+
+
+// The testing of process.go
+	// mytest()
+	// mytest2()
+	// GetFilesName()
+
+	// reverse the node_snapshots.csv, let it be the acsending order
+	// readcsv_reverse()
+
+	// calculate churn
+	// calculateChurn()
+	// calculateDailyChurnCumulative()
+
+	// calculate churn in cumulative form
+	// calculateChurnCumulative()
+	// caluculateCount()
+
+	//simulation test
+	// simulate()
+
+	// RecordStateInEachSnapshots()

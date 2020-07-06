@@ -80,8 +80,8 @@ func plotsnapshots() {
 	p.Y.Label.Text = "number of nodes"
 	p.Add(plotter.NewGrid())
 	var points plotter.XYs
-
-	points = readcsv()
+	// points = readcsv("nodes_snapshots.csv")
+	points = readcsv("nodes_snapshots_reverse_forchurn.csv")
 	// plotutil.AddLinePoints(p, points)
 
 	// Make a scatter plotter and set its style.
@@ -100,9 +100,9 @@ func plotsnapshots() {
 
 }
 
-func readcsv() plotter.XYs {
+func readcsv(file string) plotter.XYs {
 	// Open the file
-	csvfile, err := os.Open("nodes_snapshots_reverse_forchurn.csv")
+	csvfile, err := os.Open(file)
 	if err != nil {
 		log.Fatalln("Couldn't open the csv file", err)
 	}
@@ -127,9 +127,12 @@ func readcsv() plotter.XYs {
 			log.Fatal(err)
 		}
 		// fmt.Printf("Question: %s Answer %s\n", record[0], record[1])
-		if record[0] == "1590940575"{
-			break
-		}
+		// if record[0] == "1590940575"{
+		// 	break
+		// }
+		// if record[0] == "1589649378"{
+		// 	break
+		// }
 		var x, y float64
 		x, err = strconv.ParseFloat(record[0], 64)
 		y, err = strconv.ParseFloat(record[1], 64)
