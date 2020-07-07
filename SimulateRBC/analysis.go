@@ -10,14 +10,16 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"go4.org/sort"
 )
 
 func RunAnalysis() {
-	
+
 	// ReadRequest("../../nodes/results/10G/Baseline_norepair_nodes_withBlk_state/", "10Baseline.csv")
 	// ReadRequest("../../nodes/results/10G/R2_nodes_withBlk_state/", "10R2.csv")
 	// ReadRequest("../../nodes/results/10G/R4_nodes_withBlk_state/", "10R4.csv")
-	ReadRequest("../../nodes/results/10G/R8_nodes_withBlk_state/", "10R8.csv")
+	// ReadRequest("../../nodes/results/10G/R8_nodes_withBlk_state/", "10R8.csv")
 
 	// ReadRequest("../../nodes/results/5G/Baseline_norepair_nodes_withBlk_state/", "5Baseline.csv")
 	// ReadRequest("../../nodes/results/5G/R2_nodes_withBlk_state/", "5R2.csv")
@@ -34,20 +36,17 @@ func RunAnalysis() {
 	// ReadRequest("../../nodes/results/40G/R4_nodes_withBlk_state/", "40R4.csv")
 	// ReadRequest("../../nodes/results/40G/R8_nodes_withBlk_state/", "40R8.csv")
 
-	
-	
-
 	// AverageNodes()
 }
-func AverageNodes(){
+func AverageNodes() {
 	csvfile, err := os.Open("./nodes_snapshots_reverse_forchurn.csv")
 	if err != nil {
 		log.Fatalln("Couldn't open the csv file", err)
 	}
 	// Parse the file
 	r := csv.NewReader(csvfile)
-	var count,total int	
-	
+	var count, total int
+
 	for {
 		// Read each record from csv
 		record, err := r.Read()
@@ -60,16 +59,16 @@ func AverageNodes(){
 		if record[0] == "1590940575" {
 			break
 		}
-		tmp,_ := strconv.Atoi(record[1])
+		tmp, _ := strconv.Atoi(record[1])
 		total += tmp
 		count++
 	}
 
-	fmt.Println("Average nodes in this period: ",total/count)
+	fmt.Println("Average nodes in this period: ", total/count)
 
 }
 
-func ReadRequest(path string, outputName string) {
+func ReadRequestsAnalysis(path string, outputName string) {
 	names := GetFilesName(path)
 
 	// Open the file
@@ -99,10 +98,8 @@ func ReadRequest(path string, outputName string) {
 		current_timestamp, err := time.Parse(layout, record[1])
 		if i == 0 {
 			tmp_timestamp = current_timestamp
-
 		} else {
 			diff := current_timestamp.Sub(tmp_timestamp)
-
 			// fmt.Println(diff)
 			if diff.Minutes() >= 5 {
 				tmp := make(map[string]int)
@@ -118,17 +115,15 @@ func ReadRequest(path string, outputName string) {
 				} else {
 					access_status["failure"] += 0
 					tmp["failure"] += access_status["failure"]
-				}			
-							
-				record_map[names[j]] = tmp
+				}
 
+				record_map[names[j]] = tmp
 
 				fmt.Println(access_status)
 				j++
 
 				tmp_timestamp = current_timestamp
 				requests = []string{}
-
 			} else {
 				requests = append(requests, record[3])
 				// fmt.Println(requests)
@@ -137,23 +132,67 @@ func ReadRequest(path string, outputName string) {
 		}
 
 		i++
-
 	}
-	fmt.Println("total access result: ", access_status)	
-	toCSV(record_map,outputName)
-	
+	fmt.Println("total access result: ", access_status)
+	// toCSV(record_map, outputName)
+	s1 := float64(access_status["success"])
+	f1 := float64(access_status["failure"])
+	fmt.Println("failure / total: ", f1/(f1+s1))
+	writeAnalysisToCSV(record_map, "./CSVs/"+outputName)
 }
 
-func toCSV(access_record map[string]map[string]int, filename string) {
-	// layout := "2006-01-02 15:04:05"	
-	for k1, v1 := range access_record {
-		success := strconv.Itoa(v1["success"])
-		failure := strconv.Itoa(v1["failure"])
-		str := success + "," + failure
-		appendToCSV_pure(k1, str, "/home/hank/go/"+filename)
+func writeAnalysisToCSV(access_record map[string]map[string]int, filename string) {
+	var keys []int
+	for key, _ := range access_record {
+		timestamp, _ := strconv.Atoi(key)
+		keys = append(keys, timestamp)
+	}
+	// fmt.Println("keys:", keys)
+	sort.Ints(keys)
+
+	for index := range keys {
+		key := strconv.Itoa(keys[index])
+		success := strconv.Itoa(access_record[key]["success"])
+		failure := strconv.Itoa(access_record[key]["failure"])
+		// check if the file exists
+		_, err := os.Open(filename)
+		if err != nil {
+			os.Create(filename)
+		}
+
+		var path = filename
+		f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// defer f.Close()
+
+		w := csv.NewWriter(f)
+
+		var tocsv [][]string
+		tocsv = append(tocsv, []string{key, success, failure})
+
+		w.WriteAll(tocsv)
+
+		if err := w.Error(); err != nil {
+			log.Fatal(err)
+		}
+		// Replace defer f.Close() with f.Close()
+		f.Close()
 	}
 
 }
+
+// func toCSV(access_record map[string]map[string]int, filename string) {
+// 	// layout := "2006-01-02 15:04:05"
+// 	for k1, v1 := range access_record {
+// 		success := strconv.Itoa(v1["success"])
+// 		failure := strconv.Itoa(v1["failure"])
+// 		str := success + "," + failure
+// 		appendToCSV_pure(k1, str, "/home/hank/go/"+filename)
+// 	}
+
+// }
 
 func calculateAccessRate(requests []string, file string) map[string]int {
 	counter := make(map[string]int)
@@ -172,12 +211,12 @@ func calculateAccessRate(requests []string, file string) map[string]int {
 	// fmt.Println(requests)
 	// for k, v := range state {
 	// 	// fmt.Println("finding match....",k)
-	// 	if v == nil || len(v) == 0 {			
+	// 	if v == nil || len(v) == 0 {
 	// 		delete(state, k)
 	// 	} else {
 	// 		fmt.Println(len(requests))
 	// 		for i := range requests {
-	// 			for j := range v {					
+	// 			for j := range v {
 	// 				if "blk"+requests[i] == v[j] {
 	// 					counter["success"] += 1
 	// 					break
@@ -186,22 +225,22 @@ func calculateAccessRate(requests []string, file string) map[string]int {
 	// 		}
 	// 	}
 	// }
-	var tonext bool 
-	for i := range requests{
+	var tonext bool
+	for i := range requests {
 		tonext = false
-		for k,v :=range state{
-			if v ==nil || len(v) ==0{
-				delete(state,k)
-			}else{
-				for j := range v{
-					if "blk"+requests[i] == v[j]{
+		for k, v := range state {
+			if v == nil || len(v) == 0 {
+				delete(state, k)
+			} else {
+				for j := range v {
+					if "blk"+requests[i] == v[j] {
 						counter["success"] += 1
 						tonext = true
 						break
 					}
 				}
 			}
-			if tonext{
+			if tonext {
 				break
 			}
 		}
@@ -210,6 +249,7 @@ func calculateAccessRate(requests []string, file string) map[string]int {
 	return counter
 
 }
+
 // func ReadRequest_withoutTimeLimit(path string) {
 // 	fmt.Println("Get file names")
 // 	names := GetFilesName(path)

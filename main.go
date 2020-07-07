@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	TransposeMatrix "github.com/HungHan1230/GoTesting/TransposeMatrix"
 
@@ -24,4 +25,16 @@ func mainTransposeMatrix() {
 }
 func mainMyTestingReadFile() {
 	MyTestingReadFile.Run()
+}
+
+// exists returns whether the given file or directory exists
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }

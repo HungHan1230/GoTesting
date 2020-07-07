@@ -15,7 +15,7 @@ func main() {
 	// collect data from bitnodes' apis
 	// GetNodeSnapshots()
 	// plotsnapshots()
-	
+
 	// Get snapshots/timestamp
 	// timestamplist := GetTimestamps()
 	// for i := 0; i < len(timestamplist); i++ {
@@ -25,40 +25,35 @@ func main() {
 	// 		break
 	// 	}
 	// }
-	
+
 	// %------------------------------Run------------------------------%
-	// find who is always up in the snapshots
+	// Find who is always up in the network in this duration.
 	// WhoIsAlwaysUp()
+	// --------get 500/5G results--------
+	// RunProcess("Baseline_norepair_",500, false, 5, 1,"5Baseline.csv")
+	// RunProcess("R2_",500, false, 5, 2,"5R2.csv")
+	// RunProcess("R4_",500, false, 5, 4,"5R4.csv")
+	// RunProcess("R8_", 500, false, 5, 8, "5R8.csv")
+
+	// --------get 500/10G results--------
+	// RunProcess("Baseline_norepair_",500, false, 10, 1,"10Baseline.csv")
+	// RunProcess("R2_",500, false, 10, 2,"10R2.csv")
+	// RunProcess("R4_",500, false, 10, 4,"10R4.csv")
+	// RunProcess("R8_", 500, false, 10, 8, "10R8.csv")
+
+	// --------get 500/20G results--------
+	// RunProcess("Baseline_norepair_",500, false, 20, 1,"20Baseline.csv")
+	// RunProcess("R2_",500, false, 20, 2,"20R2.csv")
+	// RunProcess("R4_",500, false, 20, 4,"20R4.csv")
+	// RunProcess("R8_", 500, false, 20, 8, "20R8.csv")
+
+	// --------get 500/40G results--------
+	// RunProcess("Baseline_norepair_",500, false, 40, 1,"40Baseline.csv")
+	// RunProcess("R2_",500, false, 40, 2,"40R2.csv")
+	// RunProcess("R4_",500, false, 40, 4,"40R4.csv")
+	RunProcess("R8_", 500, false, 40, 8, "40R8.csv")
+
 	
-	// --------get Baseline result--------
-	// assignblkToFirst("Baseline_norepair_",500)
-	// assignblkToFirst_withEmpty("Baseline_norepair_")
-	// // record the lost and repair in each timestamp
-	// calculateLostAndRepair("Baseline_norepair_")	
-
-	RunProcess("Baseline_norepair_",500, false)
-
-	// --------get R2 result--------
-	// assignblkToFirst("R2_")
-	// assignblkToFirst_withEmpty("R2_")
-	// // record the lost and repair in each timestamp
-	// calculateLostAndRepair("R2_")	
-
-	// --------get R4 result--------
-	// assignblkToFirst("R4_")
-	// assignblkToFirst_withEmpty("R4_")
-	// // record the lost and repair in each timestamp
-	// calculateLostAndRepair("R4_")	
-
-	// --------get R8 result--------
-	// assignblkToFirst("R8_")
-	// assignblkToFirst_withEmpty("R8_")
-	// // record the lost and repair in each timestamp
-	// calculateLostAndRepair("R8_")	
-
-
-	// %------------------------------Analysis------------------------------%
-	// RunAnalysis()
 
 }
 
@@ -254,24 +249,56 @@ func readcsv_reverse() {
 
 // }
 
-
 // The testing of process.go
-	// mytest()
-	// mytest2()
-	// GetFilesName()
+// mytest()
+// mytest2()
+// GetFilesName()
 
-	// reverse the node_snapshots.csv, let it be the acsending order
-	// readcsv_reverse()
+// reverse the node_snapshots.csv, let it be the acsending order
+// readcsv_reverse()
 
-	// calculate churn
-	// calculateChurn()
-	// calculateDailyChurnCumulative()
+// calculate churn
+// calculateChurn()
+// calculateDailyChurnCumulative()
 
-	// calculate churn in cumulative form
-	// calculateChurnCumulative()
-	// caluculateCount()
+// calculate churn in cumulative form
+// calculateChurnCumulative()
+// caluculateCount()
 
-	//simulation test
-	// simulate()
+//simulation test
+// simulate()
 
-	// RecordStateInEachSnapshots()
+// RecordStateInEachSnapshots()
+
+// find who is always up in the snapshots
+	// WhoIsAlwaysUp()
+
+	// --------get Baseline result--------
+	// assignblkToFirst("Baseline_norepair_",500)
+	// assignblkToFirst_withEmpty("Baseline_norepair_")
+	// // record the lost and repair in each timestamp
+	// calculateLostAndRepair("Baseline_norepair_")
+
+	// --------get R2 result--------
+	// assignblkToFirst("R2_")
+	// assignblkToFirst_withEmpty("R2_")
+	// // record the lost and repair in each timestamp
+	// calculateLostAndRepair("R2_")
+	// RunProcess("R2_",500, true)
+
+	// --------get R4 result--------
+	// assignblkToFirst("R4_")
+	// assignblkToFirst_withEmpty("R4_")
+	// // record the lost and repair in each timestamp
+	// calculateLostAndRepair("R4_")
+	// RunProcess("R4_",500, true)
+
+	// --------get R8 result--------
+	// assignblkToFirst("R8_")
+	// assignblkToFirst_withEmpty("R8_")
+	// // record the lost and repair in each timestamp
+	// calculateLostAndRepair("R8_")
+	// RunProcess("R8_",500, true)
+
+	// %------------------------------Analysis------------------------------%
+	// RunAnalysis()

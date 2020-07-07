@@ -7,25 +7,41 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 )
 
 var globalstate map[string]string
 
-func RunProcess(Type_Path string, simualte_nodes int, repairOrNot bool){
-	assignblkToFirst(Type_Path,simualte_nodes)	
-	// record the lost and repair in each timestamp
-	calculateLostAndRepair(Type_Path,repairOrNot)	
+func RunProcess(Type_Path string, NumOf_ProversNodes int, repairOrNot bool, storagelimit_pernode float64, replication_factor float64, request_filename string) {
+	// --------get the results in each timestamps--------
+	// assign blk.dat file to the first timestamp.
+	assignblkToFirst(Type_Path, NumOf_ProversNodes, storagelimit_pernode, replication_factor)
+	// // record the lost and repair in each timestamp
+	calculateLostAndRepair(Type_Path, NumOf_ProversNodes, repairOrNot, storagelimit_pernode, replication_factor)
+
+	// --------Get the request results--------
+	numofprovers := strconv.Itoa(NumOf_ProversNodes)
+	// storagelimit := fmt.Sprintf("%f", storagelimit_pernode)
+	storagelimit := strconv.Itoa(int(storagelimit_pernode))
+	output_path := "../../nodes/results/" + numofprovers + "provers/" + storagelimit + "G/" + Type_Path + "nodes_withBlk_state/"
+	// ReadRequest(output_path, "10Baseline.csv")
+	ReadRequestsAnalysis(output_path, request_filename)
 }
 
-func calculateLostAndRepair(Type_Path string, repairOrNot bool) {
-	names_Blk := GetFilesName("../../nodes/"+Type_Path+"nodes_withBlk_state/")
-	names_States := GetFilesName("../../nodes/nodes_states/")
-	var path_Blk string = "../../nodes/"+Type_Path+"nodes_withBlk_state/"
+func calculateLostAndRepair(Type_Path string, NumOf_ProversNodes int, repairOrNot bool, storagelimit_pernode float64, replication_factor float64) {
+	numofprovers := strconv.Itoa(NumOf_ProversNodes)
+	// storagelimit := fmt.Sprintf("%f", storagelimit_pernode)
+	storagelimit := strconv.Itoa(int(storagelimit_pernode))
+	output_path := "../../nodes/results/" + numofprovers + "provers/" + storagelimit + "G/" + Type_Path + "nodes_withBlk_state/"
+
+	names_Blk := GetFilesName(output_path)
 	var path_Status string = "../../nodes/nodes_states/"
+	names_States := GetFilesName(path_Status)
+
 	first_state := make(map[string][]string)
-	byteValue, err := ioutil.ReadFile(path_Blk + names_Blk[0] + "_states.json")
+	byteValue, err := ioutil.ReadFile(output_path + names_Blk[0] + "_states.json")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -33,7 +49,6 @@ func calculateLostAndRepair(Type_Path string, repairOrNot bool) {
 	err = json.Unmarshal(byteValue, &first_state)
 	if err != nil {
 		fmt.Println("something wrong while parsing json!")
-		// return err
 	}
 	// Initialization of variables
 	repair := make(map[string][]string)
@@ -60,22 +75,25 @@ func calculateLostAndRepair(Type_Path string, repairOrNot bool) {
 		// repair time = 10mins, first examines the timestamp has already 10 mins (two snapshots), then add the repair element to the nodes that isn't preversed blk
 		diff := current_timestamp.Sub(previous_timestamp)
 		// fmt.Println(diff.Minutes())
-		if diff.Minutes() > 10 {
-			// for k, v := range repair {
-			// 	for kf, vf := range first_state {
-			// 		if len(vf) == 0 {
-			// 			first_state[kf] = v
-			// 			delete(repair, k)
-			// 			break
-			// 		}
-			// 	}
-			// }
-			// // fmt.Println("repair time: ", names_States[i])
-			// // fmt.Println(repair)
+		if repairOrNot {
+			if diff.Minutes() > 10 {
+				for k, v := range repair {
+					for kf, vf := range first_state {
+						if len(vf) == 0 {
+							first_state[kf] = v
+							delete(repair, k)
+							break
+						}
+					}
+				}
+				// fmt.Println("repair time: ", names_States[i])
+				// fmt.Println(repair)
 
-			// //remember the timestamp as preivous_timestamp for the next iteration
-			// forprevious_timestamp, _ := strconv.ParseInt(names_States[i], 10, 64)
-			// previous_timestamp = time.Unix(forprevious_timestamp, 0)
+				//remember the timestamp as preivous_timestamp for the next iteration
+				forprevious_timestamp, _ := strconv.ParseInt(names_States[i], 10, 64)
+				previous_timestamp = time.Unix(forprevious_timestamp, 0)
+			}
+
 		}
 
 		// Iterate elements in states, if the value is off or left, remove from the first_state, if the value is join, add to first_state with empty string slice.
@@ -89,8 +107,7 @@ func calculateLostAndRepair(Type_Path string, repairOrNot bool) {
 
 		}
 		//output this state
-		outputStates(first_state, names_States[i],Type_Path)
-
+		outputStates(first_state, names_States[i], output_path)
 	}
 
 }
@@ -101,92 +118,123 @@ func outputStates(state_map map[string][]string, name string, Directory_Path str
 		fmt.Println("something wrong while writing json!")
 	}
 	// Write to file
-	_ = ioutil.WriteFile("../../nodes/"+Directory_Path+"nodes_withBlk_state/"+name+"_states.json", file, 0644)
+	_ = ioutil.WriteFile(Directory_Path+name+"_states.json", file, 0644)
 }
 
-func assignblkToFirst(Type_Path string, simulate_n int) {	
-	names := GetFilesName("../../nodes/nodes_states")	
+func assignblkToFirst(Type_Path string, simulate_n int, storagelimit_pernode float64, replication_factor float64) {
+	names := GetFilesName("../../nodes/nodes_states")
 	var path string = "../../nodes/nodes_states"
 	first_state := make(map[string]string)
 	byteValue, err := ioutil.ReadFile(path + "/" + names[0] + "_states.json")
 	if err != nil {
 		fmt.Println(err)
-		// return err
 	}
 
 	err = json.Unmarshal(byteValue, &first_state)
 	if err != nil {
 		fmt.Println(err)
-		// fmt.Println("something wrong while parsing json!")		
-	}	
+	}
 
 	//get assignments
 	// var simulate_n int = 500
-	assign_nums := simulate(simulate_n)
+	assign_nums := simulate(simulate_n, storagelimit_pernode, replication_factor)
 	// fmt.Println("assign_nums length: ", len(assign_nums))
-	
+
 	//get keys from state.json to obtain the appeared IP addresses.
 	var keys []string
 	for k, _ := range first_state {
 		keys = append(keys, k)
 	}
 
-	// assign output
-	output := make(map[string][]string)
-	// dontrepeat := make(map[int]int)
-	for i := 0; i < simulate_n; i++ {
-		output[keys[i]] = assign_nums[i]
-		// num := rand.Intn(len(assign_nums))
-		// // fmt.Println(dontrepeat)
-		// // The number has already assigned, find another one
-		// if dontrepeat[num] != 0 {
-		// 	new_num := FindAnotherNum(dontrepeat, len(assign_nums))
-		// 	output[keys[i]] = assign_nums[new_num]
-		// 	dontrepeat[new_num] = 1
-		// } else {
-		// 	output[keys[i]] = assign_nums[num]
-		// 	dontrepeat[num] = 1
-		// }
-		// fmt.Println(dontrepeat)
+	var assign_keys []int
+	for k, _ := range assign_nums {
+		assign_keys = append(assign_keys, k)
 	}
-	fmt.Println()
-	fmt.Println("output: ", output)
-	fmt.Println("output length", len(output))
+
+	// assign output
+	output := make(map[string][]string)	
+	// fmt.Println("keys: ", keys)
+	num := 0	
+	for _, v := range assign_nums {
+		index := num * 5
+		// fmt.Println("index", index)
+		// fmt.Println(keys[index])
+		output[keys[index]] = v
+		num++
+	}
+
+	// for i := 0; i < len(assign_nums); i++ {
+	// 	num = 2
+	// 	// num := rand.Intn(5)
+
+	// 	index := num + i
+	// 	fmt.Println("i", i)
+	// 	fmt.Println("index", index)
+	// 	fmt.Println(keys[index])
+	// 	output[keys[index]] = assign_nums[i]
+	// 	// if index < len(first_state) {
+	// 	// 	fmt.Println(keys[index])
+	// 	// 	output[keys[index]] = assign_nums[i]
+	// 	// }
+	// }
+	// fmt.Println()
+	// fmt.Println("output: ", output)
+	// fmt.Println("output length", len(output))
 
 	//out the assign result to the folder nodes_withBlk_state
 	file, err := json.Marshal(output)
 	if err != nil {
 		fmt.Println("something wrong while writing json!")
 	}
-	// Write to file
-	_ = ioutil.WriteFile("../../nodes/"+Type_Path+"nodes_withBlk_state/"+names[0]+"_states.json", file, 0644)
+	numofprovers := strconv.Itoa(simulate_n)
+	// storagelimit := fmt.Sprintf("%f", storagelimit_pernode)
+	storagelimit := strconv.Itoa(int(storagelimit_pernode))	
+	output_path := "../../nodes/results/" + numofprovers + "provers/" + storagelimit + "G/" + Type_Path + "nodes_withBlk_state/"
 
-	assignblkToFirst_withEmpty(Type_Path)
+	mkdir(output_path)
+
+	// Write to file
+	_ = ioutil.WriteFile(output_path+names[0]+"_states.json", file, 0644)
+
+	assignblkToFirst_withEmpty(Type_Path, numofprovers, storagelimit, replication_factor)
 
 }
-func assignblkToFirst_withEmpty(Type_Path string) {
+
+func mkdir(path string) {
+	_, err := os.Stat(path)
+
+	if os.IsNotExist(err) {
+		errDir := os.MkdirAll(path, 0755)
+		if errDir != nil {
+			log.Fatal(err)
+		}
+
+	}
+}
+
+func assignblkToFirst_withEmpty(Type_Path string, numofprovers string, storagelimit string, replication_factor float64) {
 	namesofstates := GetFilesName("../../nodes/nodes_states")
 	first_state := make(map[string]string)
 	byteValue, err := ioutil.ReadFile("../../nodes/nodes_states/" + namesofstates[0] + "_states.json")
 	if err != nil {
-		fmt.Println(err)		
+		fmt.Println(err)
 	}
 
 	err = json.Unmarshal(byteValue, &first_state)
 	if err != nil {
-		fmt.Println("something wrong while parsing json!")		
-	}
-
-	namesofBlk := GetFilesName("../../nodes/"+Type_Path+"nodes_withBlk_state")
+		fmt.Println("something wrong while parsing json!")
+	}	
+	path := "../../nodes/results/" + numofprovers + "provers/" + storagelimit + "G/" + Type_Path + "nodes_withBlk_state/"
+	namesofBlk := GetFilesName(path)
 	first_stateWithBlk := make(map[string][]string)
-	byteValue, err = ioutil.ReadFile("../../nodes/"+Type_Path+"nodes_withBlk_state/" + namesofBlk[0] + "_states.json")
+	byteValue, err = ioutil.ReadFile(path + namesofBlk[0] + "_states.json")
 	if err != nil {
-		fmt.Println(err)		
+		fmt.Println(err)
 	}
 
 	err = json.Unmarshal(byteValue, &first_stateWithBlk)
 	if err != nil {
-		fmt.Println("something wrong while parsing json!")		
+		fmt.Println("something wrong while parsing json!")
 	}
 
 	for k, _ := range first_state {
@@ -207,28 +255,9 @@ func assignblkToFirst_withEmpty(Type_Path string) {
 		fmt.Println("something wrong while writing json!")
 	}
 	// Write to file
-	_ = ioutil.WriteFile("../../nodes/"+Type_Path+"nodes_withBlk_state/"+namesofBlk[0]+"_states.json", file, 0644)
+	_ = ioutil.WriteFile(path+namesofBlk[0]+"_states.json", file, 0644)
 }
 
-func FindAnotherNum(dontrepeat map[int]int, target int) int {
-	var ans int
-	// ans := rand.Intn(100-0) + 0
-	// ans := rand.Intn(100)
-
-	// for {
-	// 	if dontrepeat[ans] == 0 && ans < target {
-	// 		break
-	// 	}
-	// }
-	for i := 0; i < target; i++ {
-		if dontrepeat[i] == 0 {
-			ans = i
-			break
-		}
-	}
-	return ans
-
-}
 func WhoIsAlwaysUp() {
 	names := GetFilesName("../../nodes/test")
 	var previous []string
@@ -329,11 +358,11 @@ func WhoisSurvive(first []string, second []string) []string {
 
 }
 
-func simulate(simulate_nodes int) map[int][]string {
+func simulate(simulate_nodes int, storagelimit_pernode float64, replication_factor float64) map[int][]string {
 	// rand.Seed(time.Now().UnixNano())
 	var numofBlk float64 = 2116
-	var replication_factor float64 = 1
-	var storagelimit_pernode float64 = 40 //GB
+	// var replication_factor float64 = 1
+	// var storagelimit_pernode float64 = 40 //GB
 	min := 0
 	// simulate_nodes := 1000 //actually depends on how many prover nodes we want to simulate
 
@@ -375,11 +404,9 @@ func simulate(simulate_nodes int) map[int][]string {
 			}
 			// fmt.Println(num)
 			blknum := strconv.Itoa(tmpnumofblk)
-
 			// assign blk
 			if datanode_m[num] != nil && len(datanode_m[num]) <= int(maximum_numofblk_pernode) {
 				datanode_m[num] = append(datanode_m[num], "blk"+blknum)
-
 			} else {
 				// the case that the node's storage is full, then we assign to the other node who has enough space
 				if len(datanode_m[num]) > int(maximum_numofblk_pernode) {
@@ -394,7 +421,6 @@ func simulate(simulate_nodes int) map[int][]string {
 				}
 
 			}
-
 			// datanode_m[num] = append
 		}
 		tmpnumofblk--
@@ -402,7 +428,6 @@ func simulate(simulate_nodes int) map[int][]string {
 	fmt.Println("datanode map: ", datanode_m)
 	fmt.Println("length of datanode: ", len(datanode_m))
 	return datanode_m
-
 }
 
 func RecordStateInEachSnapshots() {
@@ -688,3 +713,33 @@ func mytest() {
 	// m["100.24.150.236:8333"] = "b"
 	// fmt.Println(m)
 }
+
+// func FindAnotherNum(dontrepeat map[int]int, target int) int {
+// 	var ans int
+// 	// ans := rand.Intn(100-0) + 0
+// 	// ans := rand.Intn(100)
+
+// 	// for {
+// 	// 	if dontrepeat[ans] == 0 && ans < target {
+// 	// 		break
+// 	// 	}
+// 	// }
+
+// 	// for i := 0; i < len(dontrepeat); i++ {
+// 	// 	if dontrepeat[i] == 0 {
+// 	// 		ans = i
+// 	// 		break
+// 	// 	}
+// 	// }
+
+// 	for {
+// 		num := rand.Intn(target)
+// 		if dontrepeat[num] == 0 {
+// 			ans = num
+// 			break
+// 		}
+// 	}
+
+// 	return ans
+
+// }
