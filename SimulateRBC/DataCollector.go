@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Data struct {
@@ -278,7 +279,7 @@ func appendToCSV(data Data, csvfile string) {
 }
 func appendToCSV_pure(data1 string, data2 string, csvfile string) {
 	// check if nodes.csv exists
-	_, err := os.Open(csvfile)
+	of, err := os.Open(csvfile)
 	if err != nil {
 		// fmt.Println(os.IsNotExist(err)) //true  證明檔案已經存在
 		// fmt.Println(err)                //open widuu.go: no such file or directory
@@ -290,7 +291,7 @@ func appendToCSV_pure(data1 string, data2 string, csvfile string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
+	// defer f.Close()
 
 	w := csv.NewWriter(f)
 
@@ -302,6 +303,40 @@ func appendToCSV_pure(data1 string, data2 string, csvfile string) {
 	if err := w.Error(); err != nil {
 		log.Fatal(err)
 	}
+	f.Close()
+	of.Close()
+
+}
+func appendToCSV_pure_multiple(data string, csvfile string) {
+	str := strings.Split(data,",")
+	// check if nodes.csv exists
+	of, err := os.Open(csvfile)
+	if err != nil {
+		// fmt.Println(os.IsNotExist(err)) //true  證明檔案已經存在
+		// fmt.Println(err)                //open widuu.go: no such file or directory
+		os.Create(csvfile)
+	}
+
+	var path = csvfile
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// defer f.Close()
+
+	w := csv.NewWriter(f)
+
+	var tocsv [][]string	
+	
+	tocsv = append(tocsv, str)
+
+	w.WriteAll(tocsv)
+
+	if err := w.Error(); err != nil {
+		log.Fatal(err)
+	}
+	f.Close()
+	of.Close()
 
 }
 

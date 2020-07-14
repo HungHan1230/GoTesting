@@ -1,13 +1,16 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"math"
 	"math/rand"
 	"os"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -27,7 +30,7 @@ func RunProcess(Type_Path string, NumOf_ProversNodes int, repairOrNot bool, stor
 	storagelimit := strconv.Itoa(int(storagelimit_pernode))
 	output_path := "../../nodes/results/" + numofprovers + "provers/" + storagelimit + "G/" + Type_Path + "nodes_withBlk_state/"
 	// ReadRequest(output_path, "10Baseline.csv")
-	ReadRequestsAnalysis(output_path, request_filename)
+	ReadRequestsAnalysis(Type_Path, output_path, request_filename)
 }
 
 func calculateLostAndRepair(Type_Path string, NumOf_ProversNodes int, repairOrNot bool, storagelimit_pernode float64, replication_factor float64) {
@@ -152,43 +155,54 @@ func assignblkToFirst(Type_Path string, simulate_n int, storagelimit_pernode flo
 	}
 
 	// assign output
-	output := make(map[string][]string)	
+	output := make(map[string][]string)
+	survivors := map[string]int{"101.100.174.240:8333": 1}
+	// survivors := map[string]int{"101.100.174.240:8333": 1, "103.85.190.218:20000": 1, "109.236.81.138:58333": 1, "111.221.46.63:8333": 1, "16.203.185.207:8446": 1, "136.243.142.20:8333": 1, "130.185.77.105:8333": 1, "136.143.48.128:8333": 1, "144.76.116.8:8446": 1, "142.91.11.100:8333": 1, "13.228.130.195:8333": 1, "139.59.247.235:8333": 1, "142.4.211.170:8333": 1, "142.93.109.28:8333": 1, "142.93.137.232:8333": 1, "144.76.108.6:8444": 1, "151.80.33.185:8333": 1, "144.76.117.234:8433": 1, "160.20.145.62:8333": 1, "165.22.112.46:8333": 1}
+	// survivors := map[string]int{"101.100.174.240:8333": 1, "103.85.190.218:20000": 1, "109.236.81.138:58333": 1, "111.221.46.63:8333": 1, "16.203.185.207:8446": 1}
+	// for baseline
+	// survivors := ReadSurvivors(100)
+	// for R2
+	// survivors := ReadSurvivors(800)
+	// for R4 R8
+	// survivors := ReadSurvivors(500)
+
+	var survivors_keys []string
+	for k, _ := range survivors {
+		survivors_keys = append(survivors_keys, k)
+	}
 	// fmt.Println("keys: ", keys)
-	num := 0	
+	num := 0
 	for _, v := range assign_nums {
-		index := num * 5
-		// fmt.Println("index", index)
-		// fmt.Println(keys[index])
-		output[keys[index]] = v
+		//old
+		// output[keys[num]] = v
+
+		// new
+		// index := num * 5
+		// // fmt.Println("index", index)
+		// // fmt.Println(keys[index])
+		// output[keys[index]] = v
+
+		// new with survivors
+		// if num < len(survivors_keys) {
+		if num < len(survivors_keys) {
+			output[survivors_keys[num]] = v
+			fmt.Println("eternal storage: ", output)
+		} else {
+			index := num * 5
+			output[keys[index]] = v
+		}
+
 		num++
 	}
 
-	// for i := 0; i < len(assign_nums); i++ {
-	// 	num = 2
-	// 	// num := rand.Intn(5)
-
-	// 	index := num + i
-	// 	fmt.Println("i", i)
-	// 	fmt.Println("index", index)
-	// 	fmt.Println(keys[index])
-	// 	output[keys[index]] = assign_nums[i]
-	// 	// if index < len(first_state) {
-	// 	// 	fmt.Println(keys[index])
-	// 	// 	output[keys[index]] = assign_nums[i]
-	// 	// }
-	// }
-	// fmt.Println()
-	// fmt.Println("output: ", output)
-	// fmt.Println("output length", len(output))
-
-	//out the assign result to the folder nodes_withBlk_state
+	//output the assign result to the folder nodes_withBlk_state
 	file, err := json.Marshal(output)
 	if err != nil {
 		fmt.Println("something wrong while writing json!")
 	}
 	numofprovers := strconv.Itoa(simulate_n)
 	// storagelimit := fmt.Sprintf("%f", storagelimit_pernode)
-	storagelimit := strconv.Itoa(int(storagelimit_pernode))	
+	storagelimit := strconv.Itoa(int(storagelimit_pernode))
 	output_path := "../../nodes/results/" + numofprovers + "provers/" + storagelimit + "G/" + Type_Path + "nodes_withBlk_state/"
 
 	mkdir(output_path)
@@ -223,7 +237,7 @@ func assignblkToFirst_withEmpty(Type_Path string, numofprovers string, storageli
 	err = json.Unmarshal(byteValue, &first_state)
 	if err != nil {
 		fmt.Println("something wrong while parsing json!")
-	}	
+	}
 	path := "../../nodes/results/" + numofprovers + "provers/" + storagelimit + "G/" + Type_Path + "nodes_withBlk_state/"
 	namesofBlk := GetFilesName(path)
 	first_stateWithBlk := make(map[string][]string)
@@ -258,7 +272,107 @@ func assignblkToFirst_withEmpty(Type_Path string, numofprovers string, storageli
 	_ = ioutil.WriteFile(path+namesofBlk[0]+"_states.json", file, 0644)
 }
 
+func ReadSurvivors(num int) map[string]string {
+	suvivors := make(map[string]string)
+	csvfile, err := os.Open("survivors.csv")
+	if err != nil {
+		log.Fatalln("Couldn't open the csv file", err)
+	}
+	// Parse the file
+	r := csv.NewReader(csvfile)
+
+	// Iterate through the records
+	for {
+		if num == 0{
+			break
+		}
+		// Read each record from csv
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		suvivors[record[0]] = record[1]
+
+		num--
+	}
+	return suvivors
+
+}
+
 func WhoIsAlwaysUp() {
+	names := GetFilesName("../../nodes/nodes_states")
+	var names_int []int
+	for k, _ := range names {
+		tmp, _ := strconv.Atoi(names[k])
+		names_int = append(names_int, tmp)
+	}
+	sort.Ints(names_int)
+
+	first := make(map[string]string)
+	current := make(map[string]string)
+
+	// read first state
+	str := strconv.Itoa(names_int[0])
+	byteValue, err := ioutil.ReadFile("../../nodes/nodes_states/" + str + "_states.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = json.Unmarshal(byteValue, &first)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for index := 1; index < len(names_int); index++ {
+		str := strconv.Itoa(names_int[index])
+		fmt.Println("reading....", str)
+		byteValue, err := ioutil.ReadFile("../../nodes/nodes_states/" + str + "_states.json")
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = json.Unmarshal(byteValue, &current)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		for k, v := range first {
+			for k1, v1 := range current {
+				if k == k1 {
+					if v == v1 {
+						break
+					} else {
+						delete(first, k)
+					}
+				}
+			}
+
+		}
+		fmt.Println("current survivors: ", len(first))
+
+	}
+
+	fmt.Println("Number of Survivors: ", len(first))
+	fmt.Println("survivor IP Addresses: ", first)
+	for k, v := range first {
+		appendToCSV_pure(k, v, "./survivors.csv")
+	}
+
+	// for _, v := range first {
+	// 	fmt.Print(v + " ")
+	// 	if v == "on" {
+	// 		fmt.Println("yes")
+	// 	} else if v == "left" {
+	// 		fmt.Println("no")
+	// 	}
+	// }
+
+}
+
+func WhoIsAlwaysUp_test() {
 	names := GetFilesName("../../nodes/test")
 	var previous []string
 
@@ -286,7 +400,8 @@ func WhoIsAlwaysUp() {
 				current = append(current, k)
 			}
 			whosUp := WhoisSurvive(previous, current)
-			fmt.Println(len(whosUp))
+			fmt.Println("num of nodes: ", len(whosUp))
+			fmt.Println("survivors: ", whosUp)
 			previous = current
 		}
 
@@ -349,6 +464,7 @@ func WhoisSurvive(first []string, second []string) []string {
 		for j := range second {
 			if first[i] == second[j] {
 				survivors = append(survivors, first[i])
+				// fmt.Println("survivor: ", first[i])
 				break
 			}
 		}

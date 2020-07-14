@@ -28,33 +28,113 @@ func main() {
 
 	// %------------------------------Run------------------------------%
 	// Find who is always up in the network in this duration.
-	// WhoIsAlwaysUp()
+	// WhoIsAlwaysUp()	
+
 	// --------get 500/5G results--------
 	// RunProcess("Baseline_norepair_",500, false, 5, 1,"5Baseline.csv")
 	// RunProcess("R2_",500, false, 5, 2,"5R2.csv")
 	// RunProcess("R4_",500, false, 5, 4,"5R4.csv")
 	// RunProcess("R8_", 500, false, 5, 8, "5R8.csv")
+	// RunProcess("R16_", 500, false, 5, 16, "5R16.csv")
+	// RunProcess("R32_", 500, false, 5, 32, "5R32.csv")
 
 	// --------get 500/10G results--------
 	// RunProcess("Baseline_norepair_",500, false, 10, 1,"10Baseline.csv")
 	// RunProcess("R2_",500, false, 10, 2,"10R2.csv")
 	// RunProcess("R4_",500, false, 10, 4,"10R4.csv")
 	// RunProcess("R8_", 500, false, 10, 8, "10R8.csv")
+	// RunProcess("R16_", 500, false, 10, 16, "5R16.csv")
+	// RunProcess("R32_", 500, false, 10, 32, "5R32.csv")
 
 	// --------get 500/20G results--------
 	// RunProcess("Baseline_norepair_",500, false, 20, 1,"20Baseline.csv")
 	// RunProcess("R2_",500, false, 20, 2,"20R2.csv")
 	// RunProcess("R4_",500, false, 20, 4,"20R4.csv")
 	// RunProcess("R8_", 500, false, 20, 8, "20R8.csv")
+	// RunProcess("R16_", 500, false, 20, 16, "20R16.csv")
+	// RunProcess("R32_", 500, false, 20, 32, "20R32.csv")
 
 	// --------get 500/40G results--------
 	// RunProcess("Baseline_norepair_",500, false, 40, 1,"40Baseline.csv")
 	// RunProcess("R2_",500, false, 40, 2,"40R2.csv")
 	// RunProcess("R4_",500, false, 40, 4,"40R4.csv")
-	RunProcess("R8_", 500, false, 40, 8, "40R8.csv")
+	// RunProcess("R8_", 500, false, 40, 8, "40R8.csv")
+	// RunProcess("R16_", 500, false, 40, 16, "40R16.csv")
+	// RunProcess("R32_", 500, false, 40, 32, "40R32.csv")
 
-	
+	//1000
+	// --------get 1000/5G results--------
+	// RunProcess("Baseline_norepair_",1000, false, 5, 1,"1000-5Baseline.csv")
+	// RunProcess("R2_",1000, false, 5, 2,"1000-5R2.csv")
+	// RunProcess("R4_",1000, false, 5, 4,"1000-5R4.csv")
+	// RunProcess("R8_", 1000, false, 5, 8, "1000-5R8.csv")
+	// RunProcess("R16_", 1000, false, 5, 16, "1000-5R16.csv")
+	// RunProcess("R32_", 1000, false, 5, 32, "1000-5R32.csv")
 
+	// --------get 1000/10G results--------
+	// RunProcess("Baseline_norepair_",1000, false, 10, 1,"1000-10Baseline.csv")
+	// RunProcess("R2_",1000, false, 10, 2,"1000-10R2.csv")
+	// RunProcess("R4_",1000, false, 10, 4,"1000-10R4.csv")
+	// RunProcess("R8_", 1000, false, 10, 8, "1000-10R8.csv")
+	// RunProcess("R16_", 1000, false, 10, 16, "1000-10R16.csv")
+	// RunProcess("R32_", 1000, false, 10, 32, "1000-10R32.csv")
+
+	// --------get 1000/20G results--------
+	// RunProcess("Baseline_norepair_",1000, false, 20, 1,"1000-20Baseline.csv")
+	// RunProcess("R2_",1000, false, 20, 2,"1000-20R2.csv")
+	// RunProcess("R4_",1000, false, 20, 4,"1000-20R4.csv")
+	// RunProcess("R8_", 1000, false, 20, 8, "1000-20R8.csv")
+	// RunProcess("R16_", 1000, false, 20, 16, "1000-20R16.csv")
+	// RunProcess("R32_", 1000, false, 20, 32, "1000-20R32.csv")
+
+	// --------get 1000/40G results--------
+	// RunProcess("Baseline_norepair_",1000, false, 40, 1,"1000-40Baseline.csv")
+	// RunProcess("R2_",1000, false, 40, 2,"1000-40R2.csv")
+	// RunProcess("R4_",1000, false, 40, 4,"1000-40R4.csv")
+	// RunProcess("R8_", 1000, false, 40, 8, "1000-40R8.csv")
+	// RunProcess("R16_", 1000, false, 40, 16, "1000-5R16.csv")
+	// RunProcess("R32_", 1000, false, 40, 32, "1000-5R32.csv")
+
+	// 2000
+	// --------get 2000/5G results--------
+	// RunProcess("Baseline_norepair_",2000, false, 5, 1,"2000-5Baseline.csv")
+	// RunProcess("R2_",2000, false, 5, 2,"2000-5R2.csv")
+	// RunProcess("R4_",2000, false, 5, 4,"2000-5R4.csv")
+	// RunProcess("R8_", 2000, false, 5, 8, "2000-5R8.csv")
+	// RunProcess("R16_", 2000, false, 5, 16, "2000-5R16.csv")
+	// RunProcess("R32_", 2000, false, 5, 32, "2000-5R32.csv")
+
+	// --------get 2000/10G results--------
+	// RunProcess("Baseline_norepair_",2000, false, 10, 1,"2000-10Baseline.csv")
+	// RunProcess("R2_",2000, false, 10, 2,"2000-10R2.csv")
+	// RunProcess("R4_",2000, false, 10, 4,"2000-10R4.csv")
+	// RunProcess("R8_", 2000, false, 10, 8, "2000-10R8.csv")
+	// RunProcess("R16_", 2000, false, 10, 16, "2000-10R16.csv")
+	// RunProcess("R32_", 2000, false, 10, 32, "2000-10R32.csv")
+
+	// --------get 2000/20G results--------
+	// RunProcess("Baseline_norepair_",2000, false, 20, 1,"2000-20Baseline.csv")
+	// RunProcess("R2_",2000, false, 20, 2,"2000-20R2.csv")
+	// RunProcess("R4_",2000, false, 20, 4,"2000-20R4.csv")
+	// RunProcess("R8_", 2000, false, 20, 8, "2000-20R8.csv")
+	// RunProcess("R16_", 2000, false, 20, 16, "2000-20R16.csv")
+	// RunProcess("R32_", 2000, false, 20, 32, "2000-20R32.csv")
+
+	// --------get 2000/40G results--------
+	// RunProcess("Baseline_norepair_",2000, false, 40, 1,"2000-40Baseline.csv")
+	// RunProcess("R2_",2000, false, 40, 2,"2000-40R2.csv")
+	// RunProcess("R4_",2000, false, 40, 4,"2000-40R4.csv")
+	// RunProcess("R8_", 2000, false, 40, 8, "2000-40R8.csv")
+	// RunProcess("R16_", 2000, false, 40, 16, "2000-40R16.csv")
+	// RunProcess("R32_", 2000, false, 40, 32, "2000-40R32.csv")
+
+	// %------------------------------To calculate Churn------------------------------%
+	// calculateChurn_Paper()
+	// CalculateEachSession()
+
+	// ReadIP_States()
+	// Calculate_totalChurn()
+	Calculate_averageChurn_Simple()
 }
 
 // the necessary function for using random APIs
@@ -271,34 +351,34 @@ func readcsv_reverse() {
 // RecordStateInEachSnapshots()
 
 // find who is always up in the snapshots
-	// WhoIsAlwaysUp()
+// WhoIsAlwaysUp()
 
-	// --------get Baseline result--------
-	// assignblkToFirst("Baseline_norepair_",500)
-	// assignblkToFirst_withEmpty("Baseline_norepair_")
-	// // record the lost and repair in each timestamp
-	// calculateLostAndRepair("Baseline_norepair_")
+// --------get Baseline result--------
+// assignblkToFirst("Baseline_norepair_",500)
+// assignblkToFirst_withEmpty("Baseline_norepair_")
+// // record the lost and repair in each timestamp
+// calculateLostAndRepair("Baseline_norepair_")
 
-	// --------get R2 result--------
-	// assignblkToFirst("R2_")
-	// assignblkToFirst_withEmpty("R2_")
-	// // record the lost and repair in each timestamp
-	// calculateLostAndRepair("R2_")
-	// RunProcess("R2_",500, true)
+// --------get R2 result--------
+// assignblkToFirst("R2_")
+// assignblkToFirst_withEmpty("R2_")
+// // record the lost and repair in each timestamp
+// calculateLostAndRepair("R2_")
+// RunProcess("R2_",500, true)
 
-	// --------get R4 result--------
-	// assignblkToFirst("R4_")
-	// assignblkToFirst_withEmpty("R4_")
-	// // record the lost and repair in each timestamp
-	// calculateLostAndRepair("R4_")
-	// RunProcess("R4_",500, true)
+// --------get R4 result--------
+// assignblkToFirst("R4_")
+// assignblkToFirst_withEmpty("R4_")
+// // record the lost and repair in each timestamp
+// calculateLostAndRepair("R4_")
+// RunProcess("R4_",500, true)
 
-	// --------get R8 result--------
-	// assignblkToFirst("R8_")
-	// assignblkToFirst_withEmpty("R8_")
-	// // record the lost and repair in each timestamp
-	// calculateLostAndRepair("R8_")
-	// RunProcess("R8_",500, true)
+// --------get R8 result--------
+// assignblkToFirst("R8_")
+// assignblkToFirst_withEmpty("R8_")
+// // record the lost and repair in each timestamp
+// calculateLostAndRepair("R8_")
+// RunProcess("R8_",500, true)
 
-	// %------------------------------Analysis------------------------------%
-	// RunAnalysis()
+// %------------------------------Analysis------------------------------%
+// RunAnalysis()

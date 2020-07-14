@@ -14,30 +14,6 @@ import (
 	"go4.org/sort"
 )
 
-func RunAnalysis() {
-
-	// ReadRequest("../../nodes/results/10G/Baseline_norepair_nodes_withBlk_state/", "10Baseline.csv")
-	// ReadRequest("../../nodes/results/10G/R2_nodes_withBlk_state/", "10R2.csv")
-	// ReadRequest("../../nodes/results/10G/R4_nodes_withBlk_state/", "10R4.csv")
-	// ReadRequest("../../nodes/results/10G/R8_nodes_withBlk_state/", "10R8.csv")
-
-	// ReadRequest("../../nodes/results/5G/Baseline_norepair_nodes_withBlk_state/", "5Baseline.csv")
-	// ReadRequest("../../nodes/results/5G/R2_nodes_withBlk_state/", "5R2.csv")
-	// ReadRequest("../../nodes/results/5G/R4_nodes_withBlk_state/", "5R4.csv")
-	// ReadRequest("../../nodes/results/5G/R8_nodes_withBlk_state/", "5R8.csv")
-
-	// ReadRequest("../../nodes/results/20G/Baseline_norepair_nodes_withBlk_state/", "20Baseline.csv")
-	// ReadRequest("../../nodes/results/20G/R2_nodes_withBlk_state/", "20R2.csv")
-	// ReadRequest("../../nodes/results/20G/R4_nodes_withBlk_state/", "20R4.csv")
-	// ReadRequest("../../nodes/results/20G/R8_nodes_withBlk_state/", "20R8.csv")
-
-	// ReadRequest("../../nodes/results/40G/Baseline_norepair_nodes_withBlk_state/", "40Baseline.csv")
-	// ReadRequest("../../nodes/results/40G/R2_nodes_withBlk_state/", "40R2.csv")
-	// ReadRequest("../../nodes/results/40G/R4_nodes_withBlk_state/", "40R4.csv")
-	// ReadRequest("../../nodes/results/40G/R8_nodes_withBlk_state/", "40R8.csv")
-
-	// AverageNodes()
-}
 func AverageNodes() {
 	csvfile, err := os.Open("./nodes_snapshots_reverse_forchurn.csv")
 	if err != nil {
@@ -68,7 +44,7 @@ func AverageNodes() {
 
 }
 
-func ReadRequestsAnalysis(path string, outputName string) {
+func ReadRequestsAnalysis(Type_path string, path string, outputName string) {
 	names := GetFilesName(path)
 
 	// Open the file
@@ -138,6 +114,14 @@ func ReadRequestsAnalysis(path string, outputName string) {
 	s1 := float64(access_status["success"])
 	f1 := float64(access_status["failure"])
 	fmt.Println("failure / total: ", f1/(f1+s1))
+	Fault_rate := fmt.Sprintf("%f", f1/(f1+s1))
+
+	i1 := strconv.Itoa(access_status["success"])
+	i2 := strconv.Itoa(access_status["failure"])
+	output := Type_path + "," + Fault_rate + "," + i1 + "," + i2
+
+	// output fault rate to analysis.csv
+	appendToCSV_pure_multiple(output, "analysis.csv")
 	writeAnalysisToCSV(record_map, "./CSVs/"+outputName)
 }
 

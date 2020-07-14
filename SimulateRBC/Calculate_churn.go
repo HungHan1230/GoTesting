@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -20,6 +22,337 @@ type mydata struct {
 	churn_n   int
 	add_n     int
 	add_r     float64
+}
+
+func calculateChurn_Paper() {
+	names := GetFilesName("../../nodes/nodes_states")
+
+	filelist := make(map[int][]int64)
+	var day int = 1
+	var previous, current int64
+	for index := range names {
+		if index == 0 {
+			previous, _ = strconv.ParseInt(names[index], 10, 64)
+			filelist[day] = append(filelist[day], previous)
+		} else {
+			current, _ = strconv.ParseInt(names[index], 10, 64)
+
+			t1 := time.Unix(previous, 0)
+			t2 := time.Unix(current, 0)
+			diff := t2.Sub(t1)
+			// fmt.Println(diff)
+			if diff.Hours()/24 < 1 {
+				filelist[day] = append(filelist[day], current)
+
+			} else {
+				previous = current
+				day++
+			}
+		}
+	}
+	file, err := json.Marshal(filelist)
+	if err != nil {
+		fmt.Println("something wrong while writing json!")
+	}
+	var jsonpath string = "./node_jsons_days.json"
+	// Write to file
+	_ = ioutil.WriteFile(jsonpath, file, 0644)
+
+	// fmt.Println(filelist)
+	// allmap := make(map[int]map[string]string)
+	// var path string = "../../nodes/nodes_states/"
+	// // var pre_map map[string]string
+	// for i := 1; i <= 32; i++ {
+	// 	for j := 0; j < len(filelist[i]); j++ {
+	// 		filename := filelist[i][j]
+	// 		str_filename := strconv.FormatInt(filename, 10) + "_states.json"
+	// 		allmap[i] = ReadStates(path + str_filename)
+
+	// 		//read each day each csv file
+	// 		// if j==0{
+	// 		// 	pre_map = ReadStates(str_filename)
+	// 		// }else{
+	// 		// 	cur_map := ReadStates(str_filename)
+
+	// 		// 	fmt.Println(cur_map)
+	// 		// }
+
+	// 	}
+	// 	fmt.Println("day: ",len(allmap))
+
+	// }
+
+	// first_day, _ := strconv.ParseInt(names[0], 10, 64)
+	// last_day, _ := strconv.ParseInt(names[len(names)-1], 10, 64)
+	// first := time.Unix(first_day, 0)
+	// last := time.Unix(last_day, 0)
+	// fmt.Println("first day:", first)
+	// fmt.Println("last day:", last)
+	// d := last.Sub(first)
+	// fmt.Println(d)
+	// fmt.Println(d.Hours() / 24)
+
+	// //check size
+	// var tmp int
+	// for _, v := range filelist {
+	// 	tmp += len(v)
+	// 	// fmt.Println(len(v))
+	// }
+	// fmt.Println(tmp)
+	// fmt.Println(len(filelist))
+	// fmt.Println("1 ", filelist[1])
+	// fmt.Println("last ", filelist[len(filelist)])
+}
+func CalculateEachSession() {
+	names := GetFilesName("../../nodes/nodes_states")
+	IP_States := make(map[string]map[string][]string)
+	for i := range names {
+		fmt.Println("Processing...", names[i])
+		byteValue, err := ioutil.ReadFile("../../nodes/nodes_states/" + names[i] + "_states.json")
+		if err != nil {
+			fmt.Println("something wrong!")
+			// return err
+		}
+
+		var datamap map[string]string
+		err = json.Unmarshal(byteValue, &datamap)
+		if err != nil {
+			fmt.Println("something wrong while parsing json!")
+			// return err
+		}
+		if i == 0 {
+			for k, _ := range datamap {
+				tmp := make(map[string][]string)
+				tmp["on"] = append(tmp["on"], names[i])
+				IP_States[k] = tmp
+			}
+		} else {
+			for k, v := range datamap {
+				if val, ok := IP_States[k]; ok {
+					//do something here
+					// fmt.Println(val)
+
+					if v == "on" && len(IP_States[k]["on"]) == len(val["on"]) {
+						IP_States[k]["on"] = append(IP_States[k]["on"], names[i])
+					} else if v == "off" && len(IP_States[k]["off"]) < len(IP_States[k]["on"]) {
+						IP_States[k]["off"] = append(IP_States[k]["off"], names[i])
+					}
+
+				} else if v == "on" {
+					tmp := make(map[string][]string)
+					tmp["on"] = append(tmp["on"], names[i])
+					IP_States[k] = tmp
+					// IP_States[k]["on"] = append(IP_States[k]["on"], names[i])
+				}
+
+				//maybe delete the element after adding to IP_States, probably may save some memory...?!
+			}
+
+		}
+
+	}
+	// fmt.Println(IP_States)
+	file, err := json.Marshal(IP_States)
+	if err != nil {
+		fmt.Println("something wrong while writing json!")
+	}
+	var jsonpath string = "./nodes_jsons_sessions.json"
+	// Write to file
+	_ = ioutil.WriteFile(jsonpath, file, 0644)
+
+}
+func Calculate_totalChurn() {
+	csvfile, err := os.Open("Churn_Rate.csv")
+	if err != nil {
+		log.Fatalln("Couldn't open the csv file", err)
+	}
+	// Parse the file
+	r := csv.NewReader(csvfile)
+	var count float64
+	var lineinCSV int
+	// Iterate through the records
+	for {
+		// Read each record from csv
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		// fmt.Println(record)
+		if record[1] == "+Inf" {
+			continue
+		} else {
+			tmp, _ := strconv.ParseFloat(record[1], 64)
+
+			if tmp > 10 {
+				fmt.Println(tmp)
+			}
+			count += tmp
+			lineinCSV++
+		}
+
+	}
+	fmt.Println("average churn rate: ", count/float64(lineinCSV))
+
+}
+
+func Calculate_averageChurn_Simple() {
+	byteValue, err := ioutil.ReadFile("./nodes_jsons_sessions.json")
+	if err != nil {
+		fmt.Println("something wrong!")
+		// return err
+	}
+	var datamap map[string]map[string][]string
+	err = json.Unmarshal(byteValue, &datamap)
+	if err != nil {
+		fmt.Println(err)
+	}
+	var churn_count int
+	var MaxPreMaxInner_count int
+	var MaxPreIP string
+	for k, v := range datamap {
+		var MaxInner_count int
+		for k1, v1 := range v {
+			if k1 == "off" {
+				churn_count += len(v1)
+				MaxInner_count += len(v1)
+				break
+			}
+		}
+		if MaxInner_count > MaxPreMaxInner_count{
+			MaxPreMaxInner_count = MaxInner_count
+			MaxPreIP = k		
+		}
+	}
+	fmt.Println("Max Churns: ", MaxPreMaxInner_count)
+	fmt.Println("Max ip: ", MaxPreIP)
+	fmt.Println("length of churn ip: ", len(datamap))
+	fmt.Println("total churns: ", churn_count)
+	fmt.Println("average churns: ", float64(churn_count/len(datamap)))
+
+// 	total ip:  25913
+//  total churns:  15932155
+//  average churns:  614
+}
+
+func ReadIP_States() {
+	byteValue, err := ioutil.ReadFile("./nodes_jsons_sessions.json")
+	if err != nil {
+		fmt.Println("something wrong!")
+		// return err
+	}
+
+	var datamap map[string]map[string][]string
+	err = json.Unmarshal(byteValue, &datamap)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// var ip_list []string
+	// var churn_list []float64
+	var Churn_Rate float64
+
+	for k, v := range datamap {
+		fmt.Println("processing...", k)
+		// ip_list = append(ip_list, k)
+		var duration_list []float64
+		for i := range v["on"] {
+			if len(v["on"]) != len(v["off"]) {
+				continue
+			} else {
+				on, _ := strconv.ParseInt(v["on"][i], 10, 64)
+				off, _ := strconv.ParseInt(v["off"][i], 10, 64)
+				t_on := time.Unix(on, 0)
+				t_off := time.Unix(off, 0)
+				diff := t_off.Sub(t_on).Hours() / 24
+				duration_list = append(duration_list, diff)
+
+			}
+
+		}
+		var count float64
+		for i := range duration_list {
+			count += duration_list[i]
+		}
+
+		Churn_Rate = 1 / count
+		// output key, churn_rate
+		var ipaddress string = k
+		var data_Churn = fmt.Sprintf("%f", Churn_Rate)
+		appendToCSV_pure(ipaddress, data_Churn, "Churn_Rate.csv")
+	}
+
+	//output ip, churn rate csv
+
+	// fmt.Println(len(datamap))
+
+}
+
+func CalculateEachSession_Old() {
+	byteValue, err := ioutil.ReadFile("./node_jsons_days.json")
+	if err != nil {
+		fmt.Println("something wrong!")
+		// return err
+	}
+
+	var datamap map[string][]int
+	err = json.Unmarshal(byteValue, &datamap)
+	if err != nil {
+		fmt.Println("something wrong while parsing json!")
+		// return err
+	}
+
+	for _, v := range datamap {
+		first_state := make(map[string]string)
+		for i := range v {
+			str_filename := strconv.Itoa(v[i])
+			byteValue, err = ioutil.ReadFile(str_filename)
+			if err != nil {
+				fmt.Println("something wrong!")
+				// return err
+			}
+			state_map := make(map[string]string)
+			err = json.Unmarshal(byteValue, &state_map)
+			if err != nil {
+				fmt.Println("something wrong while parsing json!")
+				// return err
+			}
+			if i == 0 {
+				first_state = state_map
+			} else {
+				// for k, _ := range first_state {
+				// 	if val, ok := state_map[k]; ok {
+				// 		//do something here
+				// 	}
+				// }
+
+			}
+
+		}
+		fmt.Println(first_state)
+
+	}
+
+}
+
+func ReadStates(str_filename string) map[string]string {
+	// Open the file
+	byteValue, err := ioutil.ReadFile(str_filename)
+	if err != nil {
+		fmt.Println("something wrong!")
+		// return err
+	}
+
+	var datamap map[string]string
+	err = json.Unmarshal(byteValue, &datamap)
+	if err != nil {
+		fmt.Println("something wrong while parsing json!")
+		// return err
+	}
+
+	return datamap
 }
 
 func caluculateCount() {
