@@ -188,7 +188,8 @@ func assignblkToFirst(Type_Path string, simulate_n int, storagelimit_pernode flo
 			output[survivors_keys[num]] = v
 			fmt.Println("eternal storage: ", output)
 		} else {
-			index := num * 5
+			//index := num * 5 before 2000
+			index := num
 			output[keys[index]] = v
 		}
 

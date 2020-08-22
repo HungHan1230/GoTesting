@@ -128,13 +128,89 @@ func main() {
 	// RunProcess("R16_", 2000, false, 40, 16, "2000-40R16.csv")
 	// RunProcess("R32_", 2000, false, 40, 32, "2000-40R32.csv")
 
+	//4000
+	// --------get 4000/5G results--------
+	// RunProcess("Baseline_norepair_",4000, false, 5, 1,"4000-5Baseline.csv")
+	// RunProcess("R2_",4000, false, 5, 2,"4000-5R2.csv")
+	// RunProcess("R4_",4000, false, 5, 4,"4000-5R4.csv")
+	// RunProcess("R8_", 4000, false, 5, 8, "4000-5R8.csv")
+	// RunProcess("R16_", 4000, false, 5, 16, "4000-5R16.csv")
+	// RunProcess("R32_", 4000, false, 5, 32, "4000-5R32.csv")
+
+	// --------get 4000/10G results--------
+	// RunProcess("Baseline_norepair_",4000, false, 10, 1,"4000-10Baseline.csv")
+	// RunProcess("R2_",4000, false, 10, 2,"4000-10R2.csv")
+	// RunProcess("R4_",4000, false, 10, 4,"4000-10R4.csv")
+	// RunProcess("R8_", 4000, false, 10, 8, "4000-10R8.csv")
+	// RunProcess("R16_", 4000, false, 10, 16, "4000-10R16.csv")
+	// RunProcess("R32_", 4000, false, 10, 32, "4000-10R32.csv")
+
+	// --------get 4000/20G results--------
+	// RunProcess("Baseline_norepair_",4000, false, 20, 1,"4000-20Baseline.csv")
+	// RunProcess("R2_",4000, false, 20, 2,"4000-20R2.csv")
+	// RunProcess("R4_",4000, false, 20, 4,"4000-20R4.csv")
+	// RunProcess("R8_", 4000, false, 20, 8, "4000-20R8.csv")
+	// RunProcess("R16_", 4000, false, 20, 16, "4000-20R16.csv")
+	// RunProcess("R32_", 4000, false, 20, 32, "4000-20R32.csv")
+
+	// --------get 4000/40G results--------
+	// RunProcess("Baseline_norepair_",4000, false, 40, 1,"4000-40Baseline.csv")
+	// RunProcess("R2_",4000, false, 40, 2,"4000-40R2.csv")
+	// RunProcess("R4_",4000, false, 40, 4,"4000-40R4.csv")
+	// RunProcess("R8_", 4000, false, 40, 8, "4000-40R8.csv")
+	// RunProcess("R16_", 4000, false, 40, 16, "4000-40R16.csv")
+	// RunProcess("R32_", 4000, false, 40, 32, "4000-40R32.csv")
+
+	//6000
+	//6000
+	// --------get 6000/5G results--------
+	// RunProcess("Baseline_norepair_",6000, false, 5, 1,"6000-5Baseline.csv")
+	// RunProcess("R2_",6000, false, 5, 2,"6000-5R2.csv")
+	// RunProcess("R4_",6000, false, 5, 4,"6000-5R4.csv")
+	// RunProcess("R8_", 6000, false, 5, 8, "6000-5R8.csv")
+	// RunProcess("R16_", 6000, false, 5, 16, "6000-5R16.csv")
+	// RunProcess("R32_", 6000, false, 5, 32, "6000-5R32.csv")
+
+	// --------get 6000/10G results--------
+	// RunProcess("Baseline_norepair_",6000, false, 10, 1,"6000-10Baseline.csv")
+	// RunProcess("R2_",6000, false, 10, 2,"6000-10R2.csv")
+	// RunProcess("R4_",6000, false, 10, 4,"6000-10R4.csv")
+	// RunProcess("R8_", 6000, false, 10, 8, "6000-10R8.csv")
+	// RunProcess("R16_", 6000, false, 10, 16, "6000-10R16.csv")
+	// RunProcess("R32_", 6000, false, 10, 32, "6000-10R32.csv")
+
+	// --------get 6000/20G results--------
+	// RunProcess("Baseline_norepair_",6000, false, 20, 1,"6000-20Baseline.csv")
+	// RunProcess("R2_",6000, false, 20, 2,"6000-20R2.csv")
+	// RunProcess("R4_",6000, false, 20, 4,"6000-20R4.csv")
+	// RunProcess("R8_", 6000, false, 20, 8, "6000-20R8.csv")
+	// RunProcess("R16_", 6000, false, 20, 16, "6000-20R16.csv")
+	// RunProcess("R32_", 6000, false, 20, 32, "6000-20R32.csv")
+
+	// --------get 6000/40G results--------
+	// RunProcess("Baseline_norepair_",6000, false, 40, 1,"6000-40Baseline.csv")
+	// RunProcess("R2_",6000, false, 40, 2,"6000-40R2.csv")
+	// RunProcess("R4_",6000, false, 40, 4,"6000-40R4.csv")
+	// RunProcess("R8_", 6000, false, 40, 8, "6000-40R8.csv")
+	// RunProcess("R16_", 6000, false, 40, 16, "6000-40R16.csv")
+	// RunProcess("R32_", 6000, false, 40, 32, "6000-40R32.csv")
+
+	//8000
+	// --------get 8000/40G results--------
+	// RunProcess("Baseline_norepair_",8000, false, 40, 1,"8000-40Baseline.csv")
+	// RunProcess("R2_",8000, false, 40, 2,"8000-40R2.csv")
+	// RunProcess("R4_",8000, false, 40, 4,"8000-40R4.csv")
+	// RunProcess("R8_", 8000, false, 40, 8, "8000-40R8.csv")
+	// RunProcess("R16_", 8000, false, 40, 16, "8000-40R16.csv")
+	RunProcess("R32_", 8000, false, 40, 32, "8000-40R32.csv")
+
 	// %------------------------------To calculate Churn------------------------------%
 	// calculateChurn_Paper()
 	// CalculateEachSession()
 
 	// ReadIP_States()
 	// Calculate_totalChurn()
-	Calculate_averageChurn_Simple()
+	// Calculate_averageChurn_Simple()
 }
 
 // the necessary function for using random APIs
